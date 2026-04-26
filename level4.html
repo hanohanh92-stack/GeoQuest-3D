@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoQuest 3D - TP 4: Pilot Akrobatik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        canvas { display: block; border-radius: 1.5rem; width: 100% !important; height: 100% !important; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col md:flex-row p-4 gap-4">
+    <div class="w-full h-[45vh] md:h-auto md:flex-1 relative bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
+        <div id="canvas-container" class="absolute inset-0"></div>
+        <div class="absolute top-4 left-4 z-10"><span id="view-label" class="bg-purple-500 text-white px-4 py-2 rounded-full text-xs md:text-sm font-bold shadow-lg uppercase tracking-wider">TP 4: Rotasi Mental</span></div>
+        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
+            <button id="btn-slowmo" onclick="replaySlowMo()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg transition flex items-center gap-2 backdrop-blur-sm hidden">⏪ Putar Lambat</button>
+        </div>
+    </div>
+    <div class="w-full md:w-96 flex flex-col gap-4">
+        <div class="glass p-6 rounded-3xl shadow-xl border-t-4 border-purple-500 flex flex-col">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white shadow-md border-2 border-white flex-shrink-0"><span class="text-2xl">👩‍🏫</span></div>
+                <div><h2 class="font-bold text-slate-800 uppercase tracking-tight">Ibu Guru</h2><p class="text-[10px] text-purple-600 font-bold uppercase">Asisten GeoQuest</p></div>
+            </div>
+            <div id="chat-bubble" class="text-slate-700 text-sm leading-relaxed font-medium italic overflow-y-auto max-h-32 transition-all">"Halo, Pilot cilik! Perhatikan Sisi Emas pada kubus ini."</div>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-xl space-y-4">
+            <h3 class="font-bold text-slate-800 text-center text-sm">DI MANA POSISI SISI EMAS SEKARANG?</h3>
+            <button id="btn-start-roll" onclick="startRolling()" class="w-full py-4 bg-purple-500 text-white rounded-xl font-bold text-lg hover:bg-purple-600 transition-all shadow-md">GULINGKAN KUBUS! 🚀</button>
+            <div id="options-container" class="grid grid-cols-2 gap-3 hidden">
+                <button onclick="checkAnswer('Atas')" class="py-3 border-2 border-slate-200 rounded-xl hover:border-purple-400 font-bold text-slate-600">⬆️ Atas</button>
+                <button onclick="checkAnswer('Bawah')" class="py-3 border-2 border-slate-200 rounded-xl hover:border-purple-400 font-bold text-slate-600">⬇️ Bawah</button>
+                <button onclick="checkAnswer('Kiri')" class="py-3 border-2 border-slate-200 rounded-xl hover:border-purple-400 font-bold text-slate-600">⬅️ Kiri</button>
+                <button onclick="checkAnswer('Kanan')" class="py-3 border-2 border-slate-200 rounded-xl hover:border-purple-400 font-bold text-slate-600">➡️ Kanan</button>
+                <button onclick="checkAnswer('Depan')" class="py-3 border-2 border-slate-200 rounded-xl hover:border-purple-400 font-bold text-slate-600">⏺ Depan</button>
+                <button onclick="checkAnswer('Belakang')" class="py-3 border-2 border-slate-200 rounded-xl hover:border-purple-400 font-bold text-slate-600">🔙 Belakang</button>
+            </div>
+            <button id="next-btn" onclick="nextLevel()" class="w-full py-3 bg-slate-100 text-slate-500 rounded-xl font-bold text-xs hover:bg-purple-500 hover:text-white transition-all hidden">SOAL BERIKUTNYA</button>
+        </div>
+    </div>
+    <script>
+        let scene, camera, renderer, group;
+        let singleCubeMesh; let currentNormal = new THREE.Vector3(); 
+        let baseMaterial, goldMaterial; let targetRotations = []; let finalDirection = ""; let chosenFaceIndex = -1;
+        window.speechUtterances = []; 
+        function speak(text, callback = null) {
+            window.speechSynthesis.cancel(); let utterance = new SpeechSynthesisUtterance(text); window.speechUtterances.push(utterance); 
+            utterance.lang = 'id-ID'; utterance.pitch = 1.3; utterance.rate = 0.85; 
+            utterance.onend = function() { if(callback) callback(); }; window.speechSynthesis.speak(utterance);
+            document.getElementById('chat-bubble').innerText = '"' + text + '"';
+        }
+        const directions = [
+            {v: new THREE.Vector3(1,0,0), name: "Kanan"}, {v: new THREE.Vector3(-1,0,0), name: "Kiri"},
+            {v: new THREE.Vector3(0,1,0), name: "Atas"}, {v: new THREE.Vector3(0,-1,0), name: "Bawah"},
+            {v: new THREE.Vector3(0,0,1), name: "Depan"}, {v: new THREE.Vector3(0,0,-1), name: "Belakang"}
+        ];
+        function getDirectionName(vec) {
+            let maxDot = -1; let bestName = "";
+            directions.forEach(d => { let dot = vec.dot(d.v); if(dot > maxDot) { maxDot = dot; bestName = d.name; } });
+            return bestName;
+        }
+        function generateShape() {
+            group.clear(); group.rotation.set(0,0,0); 
+            baseMaterial = new THREE.MeshLambertMaterial({ color: 0x94a3b8 });
+            goldMaterial = new THREE.MeshLambertMaterial({ color: 0xfab005, emissive: 0xca8a04 });
+            let materialsArray = [baseMaterial, baseMaterial, baseMaterial, baseMaterial, baseMaterial, baseMaterial];
+            chosenFaceIndex = Math.floor(Math.random() * 6);
+            materialsArray[chosenFaceIndex] = goldMaterial;
+            currentNormal.copy(directions[chosenFaceIndex].v);
+            const geo = new THREE.BoxGeometry(1.6, 1.6, 1.6);
+            singleCubeMesh = new THREE.Mesh(geo, materialsArray);
+            singleCubeMesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0x334155, linewidth: 2 })));
+            group.add(singleCubeMesh);
+            targetRotations = []; let numRotations = Math.floor(Math.random() * 2) + 1; let euler = new THREE.Euler(0,0,0);
+            for(let i=0; i<numRotations; i++) {
+                let axis = Math.floor(Math.random() * 3); let dir = Math.random() > 0.5 ? 1 : -1; let angle = (Math.PI / 2) * dir;
+                if (axis === 0) { targetRotations.push({x: angle, y:0, z:0}); euler.x += angle; }
+                if (axis === 1) { targetRotations.push({x: 0, y:angle, z:0}); euler.y += angle; }
+                if (axis === 2) { targetRotations.push({x: 0, y:0, z:angle}); euler.z += angle; }
+            }
+            finalDirection = getDirectionName(currentNormal.clone().applyEuler(euler).round());
+            speak(`Perhatikan Sisi Emas yang menghadap ke ${getDirectionName(currentNormal)}.`);
+        }
+        function init() {
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0xf1f5f9);
+            const container = document.getElementById('canvas-container');
+            camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(3, 4, 6); camera.lookAt(0, 0, 0);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            const light = new THREE.DirectionalLight(0xffffff, 0.5);
+            light.position.set(10, 20, 15); scene.add(light);
+            group = new THREE.Group(); scene.add(group);
+            generateShape(); animate();
+            window.addEventListener('resize', onWindowResize);
+        }
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+        function startRolling() {
+            document.getElementById('btn-start-roll').classList.add('hidden');
+            speak("Lacak pergerakannya!", function() {
+                singleCubeMesh.material = [baseMaterial, baseMaterial, baseMaterial, baseMaterial, baseMaterial, baseMaterial];
+                let tl = gsap.timeline({ onComplete: () => { document.getElementById('options-container').classList.remove('hidden'); speak("Di mana Sisi Emas?"); } });
+                targetRotations.forEach(rot => { tl.to(group.rotation, { x: `+=${rot.x}`, y: `+=${rot.y}`, z: `+=${rot.z}`, duration: 0.6, ease: "power1.inOut" }); });
+            });
+        }
+        function checkAnswer(guess) {
+            document.getElementById('options-container').classList.add('hidden');
+            let mats = [baseMaterial, baseMaterial, baseMaterial, baseMaterial, baseMaterial, baseMaterial];
+            mats[chosenFaceIndex] = goldMaterial; singleCubeMesh.material = mats;
+            if (guess === finalDirection) { speak("Luar biasa! Benar.", () => { document.getElementById('next-btn').classList.remove('hidden'); }); } 
+            else { speak(`Sayang sekali, aslinya di ${finalDirection}.`, () => { document.getElementById('next-btn').classList.remove('hidden'); document.getElementById('btn-slowmo').classList.remove('hidden'); }); }
+        }
+        function replaySlowMo() {
+            document.getElementById('btn-slowmo').classList.add('hidden');
+            speak("Putar lambat.");
+            gsap.to(group.rotation, {x: 0, y: 0, z: 0, duration: 1, onComplete: () => {
+                let tl = gsap.timeline();
+                targetRotations.forEach(rot => { tl.to(group.rotation, { x: `+=${rot.x}`, y: `+=${rot.y}`, z: `+=${rot.z}`, duration: 2, ease: "linear" }); });
+            }});
+        }
+        function nextLevel() {
+            document.getElementById('next-btn').classList.add('hidden'); document.getElementById('btn-start-roll').classList.remove('hidden');
+            document.getElementById('btn-slowmo').classList.add('hidden'); document.getElementById('options-container').classList.add('hidden');
+            generateShape();
+        }
+        function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
+        init();
+    </script>
+</body>
+</html>
