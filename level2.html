@@ -17,7 +17,7 @@
     <div class="w-full h-[45vh] md:h-auto md:flex-1 relative bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
         <div id="canvas-container" class="absolute inset-0"></div>
         <div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
-            <a href="index.html" class="bg-slate-700/80 hover:bg-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg transition flex items-center justify-center gap-2 backdrop-blur-sm w-max">⬅️ Kembali</a>
+            <a href="index.html" class="bg-white/90 hover:bg-white text-slate-800 px-4 py-2 rounded-full text-xs font-bold shadow-lg transition flex items-center justify-center gap-2 backdrop-blur-sm w-max border border-slate-200">⬅️ Kembali ke Markas</a>
             <span id="view-label" class="bg-sky-500 text-white px-4 py-2 rounded-full text-xs md:text-sm font-bold shadow-lg uppercase tracking-wider">TP 2: Memuat...</span>
         </div>
         <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
@@ -47,28 +47,52 @@
         </div>
     </div>
     <script>
+
+        // --- SISTEM PENGIRIMAN DATA (TELEMETRI) ---
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzh2BuLexfDG2v_yGvYuYFK_QjRROZN6qzieW0XrGaW1q5pX9k889J4vw4ktH16Y27tmA/exec";
+        
+        function sendEvaluasiData(tpName, soalName, status, alatBantu = "Tanpa Alat") {
+            const studentName = localStorage.getItem('geoquest_student_name') || "Anonim";
+            
+            const payload = {
+                nama: studentName,
+                tp: tpName,
+                soal: soalName,
+                status: status,
+                alatBantu: alatBantu
+            };
+
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Penting untuk bypass blokir CORS browser
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                console.log("Data terekam: ", payload);
+            }).catch(err => {
+                console.error("Gagal mengirim data:", err);
+            });
+        }
+
         let scene, camera, renderer, group;
         let isXRayOn = false; let isExploded = false;
         let cubesData = []; let correctCount = 0;
         window.speechUtterances = []; 
         function speak(text, callback = null) {
             window.speechSynthesis.cancel(); 
-            let utterance = new SpeechSynthesisUtterance(text);
-            window.speechUtterances.push(utterance); 
+            let utterance = new SpeechSynthesisUtterance(text); window.speechUtterances.push(utterance); 
             utterance.lang = 'id-ID'; utterance.pitch = 1.3; utterance.rate = 0.85; 
-            utterance.onend = function() { if(callback) callback(); };
-            window.speechSynthesis.speak(utterance);
+            utterance.onend = function() { if(callback) callback(); }; window.speechSynthesis.speak(utterance);
             document.getElementById('chat-bubble').innerText = '"' + text + '"';
         }
         function generateCluster() {
-            let positions = [];
-            let baseW = Math.floor(Math.random() * 2) + 2; 
-            let baseD = Math.floor(Math.random() * 2) + 2; 
+            let positions = []; let baseW = Math.floor(Math.random() * 2) + 2; let baseD = Math.floor(Math.random() * 2) + 2; 
             for(let x = 0; x < baseW; x++) { for(let z = 0; z < baseD; z++) { positions.push({x: x, y: 0, z: z}); } }
             let topCubes = Math.floor(Math.random() * 3) + 2; 
             for(let i = 0; i < topCubes; i++) {
-                let tx = Math.floor(Math.random() * baseW);
-                let tz = Math.floor(Math.random() * baseD);
+                let tx = Math.floor(Math.random() * baseW); let tz = Math.floor(Math.random() * baseD);
                 if (!positions.some(p => p.x === tx && p.y === 1 && p.z === tz)) { positions.push({x: tx, y: 1, z: tz}); }
             }
             return positions;
@@ -78,85 +102,70 @@
             const container = document.getElementById('canvas-container');
             camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
             camera.position.set(6, 5, 8); camera.lookAt(0, 0, 0);
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            container.appendChild(renderer.domElement);
+            renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(container.clientWidth, container.clientHeight); container.appendChild(renderer.domElement);
             scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-            const light = new THREE.DirectionalLight(0xffffff, 0.5);
-            light.position.set(10, 20, 15); scene.add(light);
+            const light = new THREE.DirectionalLight(0xffffff, 0.5); light.position.set(10, 20, 15); scene.add(light);
             group = new THREE.Group(); scene.add(group);
-            buildLevel(); animate();
-            window.addEventListener('resize', onWindowResize);
+            buildLevel(); animate(); window.addEventListener('resize', onWindowResize);
         }
         function onWindowResize() {
             const container = document.getElementById('canvas-container');
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
+            camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix();
             renderer.setSize(container.clientWidth, container.clientHeight);
         }
         function buildLevel() {
             group.clear(); cubesData = []; isXRayOn = false; isExploded = false;
-            document.getElementById('view-label').innerText = "TP 2: Tebak Jumlah Kubus";
-            document.getElementById('next-btn').classList.add('hidden');
-            document.getElementById('btn-xray').classList.add('hidden');
-            document.getElementById('btn-explode').classList.add('hidden');
-            let posArray = generateCluster();
-            correctCount = posArray.length;
-            const colors = [0x0ea5e9, 0xf59e0b, 0x8b5cf6, 0x10b981];
-            const matColor = colors[Math.floor(Math.random() * colors.length)];
+            document.getElementById('view-label').innerText = "TP 2: Komposisi Ruang";
+            document.getElementById('next-btn').classList.add('hidden'); document.getElementById('btn-xray').classList.add('hidden'); document.getElementById('btn-explode').classList.add('hidden');
+            let posArray = generateCluster(); correctCount = posArray.length;
+            const colors = [0x0ea5e9, 0xf59e0b, 0x8b5cf6, 0x10b981]; const matColor = colors[Math.floor(Math.random() * colors.length)];
             const material = new THREE.MeshLambertMaterial({ color: matColor, transparent: true, opacity: 1, depthWrite: true });
             posArray.forEach(p => {
                 const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material.clone());
-                const edges = new THREE.LineSegments(new THREE.EdgesGeometry(cube.geometry), new THREE.LineBasicMaterial({ color: 0x0f172a, linewidth: 2 }));
-                cube.add(edges); cube.position.set(p.x, p.y, p.z);
-                group.add(cube);
+                cube.add(new THREE.LineSegments(new THREE.EdgesGeometry(cube.geometry), new THREE.LineBasicMaterial({ color: 0x0f172a, linewidth: 2 })));
+                cube.position.set(p.x, p.y, p.z); group.add(cube);
                 cubesData.push({ mesh: cube, origX: p.x, origY: p.y, origZ: p.z });
             });
             new THREE.Box3().setFromObject(group).getCenter(group.position).multiplyScalar(-1);
-            generateOptions(correctCount);
-            speak("Halo, Arsitek cilik! Coba tebak, ada berapa total kubus kecil yang menyusun bangunan ini?");
+            generateOptions(correctCount); speak("Halo, Arsitek cilik! Coba tebak, ada berapa total kubus kecil yang menyusun bangunan ini?");
         }
         function generateOptions(correctAnswer) {
             const container = document.getElementById('options-container');
             container.innerHTML = ''; container.style.pointerEvents = 'auto';
-            let options = [correctAnswer];
-            let distractors = [correctAnswer - 1, correctAnswer + 1, correctAnswer - 2, correctAnswer + 2].filter(d => d > 0);
-            options.push(distractors.splice(Math.floor(Math.random() * distractors.length), 1)[0]);
-            options.push(distractors.splice(Math.floor(Math.random() * distractors.length), 1)[0]);
+            let options = [correctAnswer]; let distractors = [correctAnswer - 1, correctAnswer + 1, correctAnswer - 2, correctAnswer + 2].filter(d => d > 0);
+            options.push(distractors.splice(Math.floor(Math.random() * distractors.length), 1)[0]); options.push(distractors.splice(Math.floor(Math.random() * distractors.length), 1)[0]);
             options.sort(() => Math.random() - 0.5);
             options.forEach(opt => {
-                let btn = document.createElement('button');
-                btn.className = "py-4 border-2 border-slate-200 rounded-xl hover:border-sky-400 transition text-xl font-extrabold text-slate-700 bg-white shadow-sm";
-                btn.innerText = opt;
-                btn.onclick = () => checkAnswer(opt === correctAnswer);
-                container.appendChild(btn);
+                let btn = document.createElement('button'); btn.className = "py-4 border-2 border-slate-200 rounded-xl hover:border-sky-400 transition text-xl font-extrabold text-slate-700 bg-white shadow-sm";
+                btn.innerText = opt; btn.onclick = () => checkAnswer(opt === correctAnswer); container.appendChild(btn);
             });
         }
         function checkAnswer(isCorrect) {
             document.getElementById('options-container').style.pointerEvents = 'none'; 
-            document.getElementById('btn-xray').classList.remove('hidden');
-            document.getElementById('btn-explode').classList.remove('hidden');
-            const text = isCorrect 
-                ? `Luar biasa! Jawabanmu tepat sekali, ada ${correctCount} kubus.` 
-                : `Sayang sekali, masih kurang tepat. Ayo gunakan alat Sinar-X atau Bongkar untuk menghitungnya.`;
+            document.getElementById('btn-xray').classList.remove('hidden'); document.getElementById('btn-explode').classList.remove('hidden');
+            
+            // Kirim Data
+            sendEvaluasiData("TP 2: Arsitek Ruang", "Tebak Jumlah", isCorrect ? "Benar" : "Salah");
+
+            const text = isCorrect ? `Luar biasa! Jawabanmu tepat sekali, ada ${correctCount} kubus.` : `Masih kurang tepat. Ayo gunakan alat Sinar-X atau Bongkar untuk menghitungnya.`;
             speak(text, () => { document.getElementById('next-btn').classList.remove('hidden'); });
         }
         function toggleXRay() {
-            isXRayOn = !isXRayOn;
-            let btn = document.getElementById('btn-xray');
-            if (isXRayOn) { btn.classList.add('bg-sky-500'); btn.classList.remove('bg-slate-800/80'); speak("Sinar-X diaktifkan."); } 
-            else { btn.classList.remove('bg-sky-500'); btn.classList.add('bg-slate-800/80'); }
+            isXRayOn = !isXRayOn; let btn = document.getElementById('btn-xray');
+            if (isXRayOn) { 
+                btn.classList.add('bg-sky-500'); btn.classList.remove('bg-slate-800/80'); speak("Sinar-X diaktifkan."); 
+                sendEvaluasiData("TP 2: Arsitek Ruang", "Tebak Jumlah", "Info", "Sinar-X"); // Log pemakaian alat
+            } else { btn.classList.remove('bg-sky-500'); btn.classList.add('bg-slate-800/80'); }
             cubesData.forEach(data => { gsap.to(data.mesh.material, { opacity: isXRayOn ? 0.25 : 1, duration: 0.5 }); });
         }
         function toggleExplode() {
-            isExploded = !isExploded;
-            let btn = document.getElementById('btn-explode');
-            if (isExploded) { btn.classList.add('bg-sky-500'); btn.classList.remove('bg-slate-800/80'); speak("Membongkar susunan!"); } 
-            else { btn.classList.remove('bg-sky-500'); btn.classList.add('bg-slate-800/80'); speak("Menyusun kembali."); }
+            isExploded = !isExploded; let btn = document.getElementById('btn-explode');
+            if (isExploded) { 
+                btn.classList.add('bg-sky-500'); btn.classList.remove('bg-slate-800/80'); speak("Membongkar susunan!"); 
+                sendEvaluasiData("TP 2: Arsitek Ruang", "Tebak Jumlah", "Info", "Bongkar"); // Log pemakaian alat
+            } else { btn.classList.remove('bg-sky-500'); btn.classList.add('bg-slate-800/80'); speak("Menyusun kembali."); }
             cubesData.forEach(data => {
-                let targetX = isExploded ? data.origX * 1.8 : data.origX;
-                let targetY = isExploded ? data.origY * 1.8 : data.origY;
-                let targetZ = isExploded ? data.origZ * 1.8 : data.origZ;
+                let targetX = isExploded ? data.origX * 1.8 : data.origX; let targetY = isExploded ? data.origY * 1.8 : data.origY; let targetZ = isExploded ? data.origZ * 1.8 : data.origZ;
                 gsap.to(data.mesh.position, { x: targetX, y: targetY, z: targetZ, duration: 1, ease: "back.out(1.2)" });
             });
         }
