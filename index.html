@@ -175,14 +175,26 @@
         }
         function playWelcomeAudio() {
             if(isSpeaking || !studentName) return; window.speechSynthesis.cancel();
-            let text = `Halo, ${studentName}! Ibu siap mendampingimu. Mari koleksi Bintang Kelulusan di setiap pos ya!`;
+            
+            // TRIK ANTI-EJA: Ubah jadi huruf kecil khusus untuk dibaca suara
+            let namaPanggilan = studentName.toLowerCase(); 
+
+            let text = `Halo, ${namaPanggilan}! Ibu siap mendampingimu. Mari koleksi Bintang Kelulusan di setiap pos ya!`;
             
             // Cek jika sudah lulus semua
             if(localStorage.getItem('geoquest_tp4_done') === 'true') {
-                text = `Luar biasa, ${studentName}! Kamu telah mengumpulkan ke-4 bintang. Silakan klik tombol klaim sertifikat di paling bawah peta.`;
+                text = `Waaah luar biasa, ${namaPanggilan}! Kamu telah mengumpulkan ke-empat bintang! Silakan klik tombol klaim sertifikat di paling bawah peta.`;
             }
 
-            let utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'id-ID'; utterance.pitch = 1.2; utterance.rate = 0.95;
+            let utterance = new SpeechSynthesisUtterance(text); 
+            utterance.lang = 'id-ID'; 
+            utterance.pitch = 1.5; // NADA LEBIH TINGGI AGAR SANGAT CERIA!
+            utterance.rate = 1.05; // Sedikit lebih cepat agar terdengar semangat
+            
+            let voices = window.speechSynthesis.getVoices();
+            let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
+            if(femaleVoice) utterance.voice = femaleVoice;
+
             utterance.onstart = () => { isSpeaking = true; }; utterance.onend = () => { isSpeaking = false; };
             window.speechSynthesis.speak(utterance);
         }
