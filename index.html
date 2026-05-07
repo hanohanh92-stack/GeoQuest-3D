@@ -3,90 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoQuest 3D - Markas Utama</title>
+    <title>GeoQuest 3D - Peta Penjelajahan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        body { background-color: #fdf6e3; background-image: radial-gradient(#e5d8b8 1px, transparent 1px); background-size: 20px 20px; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
+        .hover-lift { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .hover-lift:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.15); }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
+        .map-marker { animation: pulse-ring 2s infinite; }
+        .star-badge { filter: drop-shadow(0 0 5px #fbbf24); }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-800 selection:bg-teal-200">
-    <div class="h-64 w-full bg-gradient-to-r from-teal-400 to-sky-400 absolute top-0 left-0 z-0 rounded-b-[3rem] shadow-md"></div>
-    <div class="relative z-10 max-w-5xl mx-auto px-4 py-8 flex flex-col gap-8">
-        <div class="absolute top-0 right-0 p-4">
-            <button id="logout-btn" onclick="logout()" class="bg-red-500/90 hover:bg-red-600 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg transition flex items-center gap-2 backdrop-blur-sm hidden">
-                🚪 Keluar / Ganti Nama
+<body class="min-h-screen font-sans text-slate-800 selection:bg-amber-200 overflow-x-hidden">
+    
+    <div class="h-72 w-full bg-gradient-to-b from-sky-400 via-teal-300 to-transparent absolute top-0 left-0 z-0"></div>
+    
+    <div class="relative z-10 max-w-5xl mx-auto px-4 py-10 flex flex-col gap-6">
+        
+        <div class="absolute top-4 right-4 md:right-8 z-50">
+            <button id="logout-btn" onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-xl transition-all flex items-center gap-2 hidden border-2 border-white">
+                🚪 Ganti Nama
             </button>
         </div>
-        <div class="text-center mt-4">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-md">GeoQuest 3D</h1>
-            <p class="text-teal-50 font-medium mt-2 text-sm md:text-base">Petualangan Ruang & Imajinasi Geometri</p>
+
+        <div class="text-center mt-6">
+            <div class="inline-block bg-amber-500 text-white px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-3 shadow-md border border-amber-400">🧭 Penjelajahan Geometri</div>
+            <h1 class="text-5xl md:text-6xl font-extrabold text-slate-800 tracking-tight drop-shadow-lg" style="text-shadow: 2px 2px 0px #fff;">GeoQuest 3D</h1>
+            <p class="text-slate-700 font-bold mt-2 text-md md:text-lg bg-white/50 inline-block px-4 py-1 rounded-full backdrop-blur-sm">Selamat Datang di Gerbang Utama Petualangan!</p>
         </div>
         
-        <div class="glass p-6 md:p-8 rounded-3xl shadow-xl border-t-4 border-teal-500 flex flex-col md:flex-row items-center gap-6 max-w-3xl mx-auto w-full">
-            <div class="w-20 h-20 bg-teal-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white flex-shrink-0 animate-bounce cursor-pointer" onclick="playWelcomeAudio()">
-                <span class="text-4xl">👩‍🏫</span>
+        <div class="glass p-6 md:p-8 rounded-3xl shadow-2xl border-4 border-amber-400 flex flex-col md:flex-row items-center gap-6 max-w-3xl mx-auto w-full relative overflow-hidden mt-4">
+            <div class="w-24 h-24 bg-amber-500 rounded-full flex items-center justify-center text-white shadow-xl border-4 border-white flex-shrink-0 animate-bounce cursor-pointer z-10" onclick="playWelcomeAudio()">
+                <span class="text-5xl">👩‍🏫</span>
             </div>
-            <div class="text-center md:text-left w-full">
-                <h2 id="welcome-title" class="font-bold text-xl text-slate-800">Selamat Datang, Penjelajah!</h2>
-                <div id="login-area" class="mt-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                    <p class="text-sm text-slate-600 font-bold mb-2">Sebelum mulai, siapa namamu?</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="student-name-input" placeholder="Ketik namamu di sini..." class="flex-1 px-4 py-2 rounded-xl border-2 border-slate-200 focus:border-teal-500 focus:outline-none transition">
-                        <button onclick="saveName()" class="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-xl font-bold transition shadow-md">Mulai!</button>
+            
+            <div class="text-center md:text-left w-full z-10">
+                <h2 id="welcome-title" class="font-extrabold text-2xl text-slate-800 italic">"Halo, Penjelajah Hebat!"</h2>
+                
+                <div id="login-area" class="mt-4 bg-white/80 p-5 rounded-2xl border-2 border-amber-200">
+                    <p class="text-sm text-slate-700 font-bold mb-3">Tuliskan nama penjelajahmu untuk memulai!</p>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="student-name-input" placeholder="Siapa namamu?" class="flex-1 px-5 py-3 rounded-xl border-2 border-slate-300 focus:border-amber-500 focus:outline-none font-bold text-slate-700">
+                        <button onclick="saveName()" class="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-xl font-bold transition shadow-lg transform hover:-translate-y-1">Mulai Petualangan!</button>
                     </div>
                 </div>
-                <p id="chat-bubble" class="text-slate-600 mt-2 leading-relaxed italic text-sm md:text-base hidden">
-                    "Halo, <span id="display-name"></span>! Ibu senang sekali kamu ada di sini. Pilih Tujuan Pembelajaran mana saja yang ingin kamu coba."
+                
+                <p id="chat-bubble" class="text-slate-700 mt-3 leading-relaxed italic text-md md:text-lg font-medium hidden bg-white/70 p-4 rounded-xl border-l-4 border-amber-500">
+                    "Halo, <span id="display-name" class="font-bold text-amber-600 uppercase"></span>! Koleksilah semua Bintang dari ke-4 pos petualangan ini ya!"
                 </p>
-                <button id="audio-btn" onclick="playWelcomeAudio()" class="mt-3 px-4 py-1.5 bg-teal-100 text-teal-700 text-xs font-bold rounded-full hover:bg-teal-200 transition hidden">🔊 Ulangi Suara Ibu Guru</button>
             </div>
         </div>
 
-        <div id="tp-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 opacity-50 pointer-events-none transition-all duration-500">
-            <a href="level1.html" class="glass hover-lift p-6 rounded-3xl border-2 border-slate-100 group">
-                <div class="flex items-start gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-500 flex items-center justify-center text-2xl flex-shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors">📦</div>
-                    <div>
-                        <h3 class="font-bold text-lg text-slate-800">TP 1: Sang Pelipat Ajaib</h3>
-                        <p class="text-xs text-teal-600 font-bold uppercase tracking-wider mb-2">Mental Folding</p>
-                        <p class="text-sm text-slate-500">Bayangkan bagaimana sebuah jaring-jaring datar bisa dilipat menjadi kubus atau balok.</p>
-                    </div>
+        <div id="tp-grid" class="relative max-w-4xl mx-auto w-full mt-12 mb-20 opacity-50 pointer-events-none transition-all duration-1000">
+            <div class="absolute left-8 md:left-1/2 transform md:-translate-x-1/2 w-1.5 h-full border-l-4 border-dashed border-amber-400 z-0 opacity-60"></div>
+
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-center mb-16 md:mb-8 group">
+                <div class="order-2 md:order-1 w-full md:w-5/12 pl-20 md:pl-0 pr-0 md:pr-10 text-left md:text-right">
+                    <a href="level1.html" class="block glass hover-lift p-6 rounded-3xl border-b-4 border-amber-500 relative">
+                        <div id="star-tp1" class="absolute -top-4 -right-4 text-4xl star-badge hidden">⭐</div>
+                        <div class="text-4xl mb-3">📦</div>
+                        <h3 class="font-extrabold text-xl text-slate-800">Pos 1: Sang Pelipat Ajaib</h3>
+                        <p class="text-xs text-amber-600 font-bold uppercase tracking-wider mb-2 italic">Misi: Mental Folding</p>
+                    </a>
                 </div>
-            </a>
-            <a href="level2.html" class="glass hover-lift p-6 rounded-3xl border-2 border-slate-100 group">
-                <div class="flex items-start gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-sky-100 text-sky-500 flex items-center justify-center text-2xl flex-shrink-0 group-hover:bg-sky-500 group-hover:text-white transition-colors">🧱</div>
-                    <div>
-                        <h3 class="font-bold text-lg text-slate-800">TP 2: Arsitek Ruang</h3>
-                        <p class="text-xs text-teal-600 font-bold uppercase tracking-wider mb-2">Komposisi & Dekomposisi</p>
-                        <p class="text-sm text-slate-500">Susun balok dan kubus, lalu tebak berapa banyak kubus yang bersembunyi.</p>
-                    </div>
+                <div class="order-1 md:order-2 absolute left-8 md:left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+                    <div class="w-6 h-6 bg-white rounded-full border-4 border-amber-500 z-20 map-marker shadow-lg"></div>
                 </div>
-            </a>
-            <a href="level3.html" class="glass hover-lift p-6 rounded-3xl border-2 border-slate-100 group">
-                <div class="flex items-start gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-500 flex items-center justify-center text-2xl flex-shrink-0 group-hover:bg-teal-500 group-hover:text-white transition-colors">📷</div>
-                    <div>
-                        <h3 class="font-bold text-lg text-slate-800">TP 3: Sang Fotografer</h3>
-                        <p class="text-xs text-teal-600 font-bold uppercase tracking-wider mb-2">De-dimensionalisasi</p>
-                        <p class="text-sm text-slate-500">Ubah benda ruang 3 dimensi menjadi bayangan datar 2 dimensi secara akurat.</p>
-                    </div>
+                <div class="order-3 w-full md:w-5/12 hidden md:block"></div>
+            </div>
+
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-center mb-16 md:mb-8 group">
+                <div class="order-3 w-full md:w-5/12 hidden md:block"></div>
+                <div class="order-1 absolute left-8 md:left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+                    <div class="w-6 h-6 bg-white rounded-full border-4 border-sky-500 z-20 map-marker shadow-lg"></div>
                 </div>
-            </a>
-            <a href="level4.html" class="glass hover-lift p-6 rounded-3xl border-2 border-slate-100 group">
-                <div class="flex items-start gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-500 flex items-center justify-center text-2xl flex-shrink-0 group-hover:bg-purple-500 group-hover:text-white transition-colors">🔄</div>
-                    <div>
-                        <h3 class="font-bold text-lg text-slate-800">TP 4: Pilot Akrobatik</h3>
-                        <p class="text-xs text-teal-600 font-bold uppercase tracking-wider mb-2">Rotasi Mental</p>
-                        <p class="text-sm text-slate-500">Putar bangun ruang di dalam kepalamu untuk menemukan posisi yang tepat.</p>
-                    </div>
+                <div class="order-2 w-full md:w-5/12 pl-20 md:pl-10 text-left">
+                    <a href="level2.html" class="block glass hover-lift p-6 rounded-3xl border-b-4 border-sky-500 relative">
+                        <div id="star-tp2" class="absolute -top-4 -right-4 text-4xl star-badge hidden">⭐</div>
+                        <div class="text-4xl mb-3">🧱</div>
+                        <h3 class="font-extrabold text-xl text-slate-800">Pos 2: Arsitek Ruang</h3>
+                        <p class="text-xs text-sky-600 font-bold uppercase tracking-wider mb-2 italic">Misi: Spatial Structuring</p>
+                    </a>
                 </div>
-            </a>
+            </div>
+
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-center mb-16 md:mb-8 group">
+                <div class="order-2 md:order-1 w-full md:w-5/12 pl-20 md:pl-0 pr-0 md:pr-10 text-left md:text-right">
+                    <a href="level3.html" class="block glass hover-lift p-6 rounded-3xl border-b-4 border-teal-500 relative">
+                        <div id="star-tp3" class="absolute -top-4 -right-4 text-4xl star-badge hidden">⭐</div>
+                        <div class="text-4xl mb-3">📷</div>
+                        <h3 class="font-extrabold text-xl text-slate-800">Pos 3: Sang Fotografer</h3>
+                        <p class="text-xs text-teal-600 font-bold uppercase tracking-wider mb-2 italic">Misi: Orthogonal Projection</p>
+                    </a>
+                </div>
+                <div class="order-1 md:order-2 absolute left-8 md:left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+                    <div class="w-6 h-6 bg-white rounded-full border-4 border-teal-500 z-20 map-marker shadow-lg"></div>
+                </div>
+                <div class="order-3 w-full md:w-5/12 hidden md:block"></div>
+            </div>
+
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-center mb-16 md:mb-8 group">
+                <div class="order-3 w-full md:w-5/12 hidden md:block"></div>
+                <div class="order-1 absolute left-8 md:left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+                    <div class="w-6 h-6 bg-white rounded-full border-4 border-purple-500 z-20 map-marker shadow-lg"></div>
+                </div>
+                <div class="order-2 w-full md:w-5/12 pl-20 md:pl-10 text-left">
+                    <a href="level4.html" class="block glass hover-lift p-6 rounded-3xl border-b-4 border-purple-500 relative">
+                        <div id="star-tp4" class="absolute -top-4 -right-4 text-4xl star-badge hidden">⭐</div>
+                        <div class="text-4xl mb-3">🔄</div>
+                        <h3 class="font-extrabold text-xl text-slate-800">Pos 4: Pilot Akrobatik</h3>
+                        <p class="text-xs text-purple-600 font-bold uppercase tracking-wider mb-2 italic">Misi: Mental Rotation</p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="absolute bottom-0 left-8 md:left-1/2 transform -translate-x-1/2 translate-y-20 flex flex-col items-center z-30">
+                <div class="text-5xl drop-shadow-xl mb-4">🏆</div>
+                <a href="sertifikat.html" id="btn-claim-cert" class="bg-yellow-400 hover:bg-yellow-500 text-slate-900 px-6 py-3 rounded-full font-extrabold shadow-xl border-4 border-white transition transform hover:scale-110 animate-pulse hidden text-center w-max">
+                    KLAIM SERTIFIKATMU!
+                </a>
+            </div>
         </div>
     </div>
+
     <script>
         let isSpeaking = false; let studentName = "";
         function checkLogin() {
@@ -94,37 +134,55 @@
             if(studentName) {
                 document.getElementById('login-area').classList.add('hidden');
                 document.getElementById('chat-bubble').classList.remove('hidden');
-                document.getElementById('audio-btn').classList.remove('hidden');
                 document.getElementById('logout-btn').classList.remove('hidden');
                 document.getElementById('display-name').innerText = studentName;
-                document.getElementById('welcome-title').innerText = "Selamat Datang Kembali, " + studentName + "!";
+                document.getElementById('welcome-title').innerText = "Selamat Berjuang, " + studentName + "!";
                 document.getElementById('tp-grid').classList.remove('opacity-50', 'pointer-events-none');
+                
+                // CEK SEMUA BINTANG
+                let tp1Done = localStorage.getItem('geoquest_tp1_done') === 'true';
+                let tp2Done = localStorage.getItem('geoquest_tp2_done') === 'true';
+                let tp3Done = localStorage.getItem('geoquest_tp3_done') === 'true';
+                let tp4Done = localStorage.getItem('geoquest_tp4_done') === 'true';
+
+                if(tp1Done) document.getElementById('star-tp1').classList.remove('hidden');
+                if(tp2Done) document.getElementById('star-tp2').classList.remove('hidden');
+                if(tp3Done) document.getElementById('star-tp3').classList.remove('hidden');
+                if(tp4Done) document.getElementById('star-tp4').classList.remove('hidden');
+
+                // JIKA SEMUA SELESAI, BUKA TOMBOL SERTIFIKAT!
+                if(tp1Done && tp2Done && tp3Done && tp4Done) {
+                    document.getElementById('btn-claim-cert').classList.remove('hidden');
+                    document.getElementById('chat-bubble').innerHTML = `"Luar biasa <span class='font-bold text-amber-600 uppercase'>${studentName}</span>! Kamu telah mengumpulkan ke-4 bintang. Silakan klaim sertifikatmu di bawah!"`;
+                }
                 setTimeout(playWelcomeAudio, 500);
             } else {
                 document.getElementById('login-area').classList.remove('hidden');
                 document.getElementById('chat-bubble').classList.add('hidden');
-                document.getElementById('audio-btn').classList.add('hidden');
                 document.getElementById('logout-btn').classList.add('hidden');
-                document.getElementById('welcome-title').innerText = "Selamat Datang, Penjelajah!";
                 document.getElementById('tp-grid').classList.add('opacity-50', 'pointer-events-none');
             }
         }
         function saveName() {
             let inputName = document.getElementById('student-name-input').value.trim();
-            if(inputName === "") { alert("Namanya diisi dulu ya!"); return; }
+            if(inputName === "") { alert("Penjelajah butuh nama! Isi dulu ya!"); return; }
             localStorage.setItem('geoquest_student_name', inputName); checkLogin();
         }
         function logout() {
-            if(confirm("Apakah kamu ingin keluar dan berganti nama?")) {
-                localStorage.removeItem('geoquest_student_name');
-                checkLogin();
-                location.reload();
+            if(confirm("Apakah kamu ingin menghapus semua kemajuan bintang dan berganti nama?")) {
+                localStorage.clear(); checkLogin(); location.reload();
             }
         }
         function playWelcomeAudio() {
             if(isSpeaking || !studentName) return; window.speechSynthesis.cancel();
-            const text = `Halo, ${studentName}! Pilih Tujuan Pembelajaran mana saja yang ingin kamu coba lebih dulu.`;
-            let utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'id-ID'; utterance.pitch = 1.3; utterance.rate = 0.85;
+            let text = `Halo, ${studentName}! Ibu siap mendampingimu. Mari koleksi Bintang Kelulusan di setiap pos ya!`;
+            
+            // Cek jika sudah lulus semua
+            if(localStorage.getItem('geoquest_tp4_done') === 'true') {
+                text = `Luar biasa, ${studentName}! Kamu telah mengumpulkan ke-4 bintang. Silakan klik tombol klaim sertifikat di paling bawah peta.`;
+            }
+
+            let utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'id-ID'; utterance.pitch = 1.2; utterance.rate = 0.95;
             utterance.onstart = () => { isSpeaking = true; }; utterance.onend = () => { isSpeaking = false; };
             window.speechSynthesis.speak(utterance);
         }
