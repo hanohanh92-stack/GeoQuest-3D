@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f59e0b">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sertifikat Kelulusan - GeoQuest 3D</title>
@@ -128,6 +131,19 @@
                 }, 800);
             }
         });
+    </script>
+<script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker sukses didaftarkan dengan scope: ', registration.scope);
+                })
+                .catch(err => {
+                    console.log('ServiceWorker gagal didaftarkan: ', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
