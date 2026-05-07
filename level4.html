@@ -13,118 +13,294 @@
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col md:flex-row p-4 gap-4">
-    <div class="w-full h-[45vh] md:h-auto md:flex-1 relative bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
+    
+    <div class="w-full h-[50vh] md:min-h-[500px] md:flex-1 relative bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
         <div id="canvas-container" class="absolute inset-0"></div>
+        
         <div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
-            <a href="index.html" class="bg-white/90 hover:bg-white text-slate-800 px-4 py-2 rounded-full text-xs font-bold shadow-lg transition flex items-center justify-center gap-2 backdrop-blur-sm w-max border border-slate-200">⬅️ Kembali ke Markas</a>
-            <span id="view-label" class="bg-purple-500 text-white px-4 py-2 rounded-full text-xs md:text-sm font-bold shadow-lg uppercase tracking-wider">TP 4: Rotasi Mental</span>
+            <a href="index.html" class="bg-white/90 hover:bg-white text-slate-800 px-4 py-2 rounded-full text-xs font-bold shadow-lg transition flex items-center justify-center gap-2 border border-slate-200 w-max">⬅️ Kembali ke Gerbang Utama</a>
+            
+            <button id="btn-lanjut-tp" onclick="alert('Selamat! Kamu telah menyelesaikan seluruh ekspedisi GeoQuest 3D!')" class="bg-yellow-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg border border-yellow-600 hover:bg-yellow-600 transition animate-bounce hidden w-max text-slate-900">🏆 KLAIM SERTIFIKAT PENJELAJAH</button>
+
+            <span id="view-label" class="bg-purple-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider w-max">TP 4: Mental Rotation</span>
         </div>
-        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
-            <button id="btn-slowmo" onclick="replaySlowMo()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg transition hidden">⏪ Putar Lambat</button>
+
+        <div class="absolute top-4 right-4 z-10">
+            <span id="progress-badge" class="bg-yellow-400 text-slate-800 px-4 py-2 rounded-full text-xs font-bold shadow-lg border-2 border-white">⭐ 0/10 Terkumpul</span>
+        </div>
+
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
+            <button id="btn-slowmo" onclick="replaySlowMo()" class="bg-slate-800/90 hover:bg-purple-500 text-white px-5 py-3 rounded-full text-xs font-bold shadow-xl transition transform hover:-translate-y-1 hidden border-2 border-slate-700">⏪ Nyalakan Putar Lambat</button>
         </div>
     </div>
+    
     <div class="w-full md:w-96 flex flex-col gap-4">
+        
         <div class="glass p-6 rounded-3xl shadow-xl border-t-4 border-purple-500 flex flex-col">
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white shadow-md border-2 border-white flex-shrink-0"><span class="text-2xl">👩‍🏫</span></div>
-                <div><h2 class="font-bold text-slate-800 uppercase tracking-tight">Ibu Guru</h2><p class="text-[10px] text-purple-600 font-bold uppercase">Asisten GeoQuest</p></div>
+                <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white shadow-md border-2 border-white flex-shrink-0 text-2xl">👩‍🏫</div>
+                <div><h2 class="font-bold text-slate-800 uppercase tracking-tight">Bu Geo AI</h2><p class="text-[10px] text-purple-600 font-bold uppercase">Asisten Virtual Empatik</p></div>
             </div>
-            <div id="chat-bubble" class="text-slate-700 text-sm leading-relaxed font-medium italic overflow-y-auto max-h-32 transition-all">"Halo, Pilot cilik! Perhatikan Sisi Emas pada kubus ini."</div>
+            <div id="chat-bubble" class="text-slate-700 text-sm italic overflow-y-auto max-h-32 transition-all leading-relaxed font-medium">"Halo, Pilot Spasial! Perhatikan letak Sisi Emas pada kubus ini."</div>
         </div>
-        <div class="bg-white p-6 rounded-3xl shadow-xl space-y-4">
-            <h3 class="font-bold text-slate-800 text-center text-xs uppercase">DI MANA POSISI SISI EMAS SEKARANG?</h3>
-            <button id="btn-start-roll" onclick="startRolling()" class="w-full py-4 bg-purple-500 text-white rounded-xl font-bold text-sm shadow-md">GULINGKAN KUBUS! 🚀</button>
-            <div id="options-container" class="grid grid-cols-2 gap-3 hidden">
-                <button onclick="checkAnswer('Atas')" class="py-3 border-2 rounded-xl font-bold text-slate-600 text-xs">⬆️ Atas</button>
-                <button onclick="checkAnswer('Bawah')" class="py-3 border-2 rounded-xl font-bold text-slate-600 text-xs">⬇️ Bawah</button>
-                <button onclick="checkAnswer('Kiri')" class="py-3 border-2 rounded-xl font-bold text-slate-600 text-xs">⬅️ Kiri</button>
-                <button onclick="checkAnswer('Kanan')" class="py-3 border-2 rounded-xl font-bold text-slate-600 text-xs">➡️ Kanan</button>
-                <button onclick="checkAnswer('Depan')" class="py-3 border-2 rounded-xl font-bold text-slate-600 text-xs">⏺ Depan</button>
-                <button onclick="checkAnswer('Belakang')" class="py-3 border-2 rounded-xl font-bold text-slate-600 text-xs">🔙 Belakang</button>
-            </div>
-            <button id="next-btn" onclick="nextLevel()" class="w-full py-3 bg-slate-100 text-slate-500 rounded-xl font-bold text-xs hidden">SOAL BERIKUTNYA</button>
+        
+        <div class="bg-white p-6 rounded-3xl shadow-xl space-y-4 flex flex-col">
+            <h3 class="font-extrabold text-slate-800 text-center text-xs tracking-wider" id="question-text">HAPALKAN POSISI SISI EMASNYA!</h3>
+            
+            <button id="btn-start-roll" onclick="startRolling()" class="w-full py-5 bg-purple-500 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-purple-600 transition transform hover:-translate-y-1">GULINGKAN KUBUS! 🚀</button>
+            
+            <div id="options-container" class="grid grid-cols-2 gap-3 hidden min-h-[140px]">
+                </div>
+            
+            <button id="next-btn" onclick="nextLevel()" class="w-full py-3 bg-purple-500 text-white rounded-xl font-bold text-xs shadow-lg hover:bg-purple-600 transition transform hover:-translate-y-1 hidden">➡️ MENUJU PUTARAN BERIKUTNYA</button>
         </div>
     </div>
+    
     <script>
-
-        // --- SISTEM PENGIRIMAN DATA (TELEMETRI) ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzh2BuLexfDG2v_yGvYuYFK_QjRROZN6qzieW0XrGaW1q5pX9k889J4vw4ktH16Y27tmA/exec";
-        
         function sendEvaluasiData(tpName, soalName, status, alatBantu = "Tanpa Alat") {
             const studentName = localStorage.getItem('geoquest_student_name') || "Anonim";
-            
-            const payload = {
-                nama: studentName,
-                tp: tpName,
-                soal: soalName,
-                status: status,
-                alatBantu: alatBantu
-            };
-
             fetch(GAS_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            }).then(() => {
-                console.log("Data terekam: ", payload);
-            }).catch(err => {
-                console.error("Gagal mengirim data:", err);
-            });
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nama: studentName, tp: tpName, soal: soalName, status: status, alatBantu: alatBantu })
+            }).catch(err => console.error("Offline mode"));
         }
 
         let scene, camera, renderer, group;
-        let singleCubeMesh; let cNormal = new THREE.Vector3(); let baseMat, goldMat; let tRots = []; let fDir = ""; let cFaceIdx = -1; window.speechUtterances = []; 
+        let singleCubeMesh; let cNormal = new THREE.Vector3(); let baseMat, goldMat; 
+        let tRots = []; let fDir = ""; let cFaceIdx = -1; 
+        
+        let alatYangDigunakan = "Tanpa Alat";
+        let sudahMenjawabBenar = false;
+        let isRolling = false;
+
+        // Progres Bintang Kelulusan
+        let correctCountTP4 = parseInt(localStorage.getItem('tp4_correct_count')) || 0;
+
         function speak(text, callback = null) {
-            window.speechSynthesis.cancel(); let utterance = new SpeechSynthesisUtterance(text); window.speechUtterances.push(utterance); 
-            utterance.lang = 'id-ID'; utterance.pitch = 1.3; utterance.rate = 0.85; 
-            utterance.onend = function() { if(callback) callback(); }; window.speechSynthesis.speak(utterance);
-            document.getElementById('chat-bubble').innerText = '"' + text + '"';
+            document.getElementById('chat-bubble').innerText = `"${text}"`;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); 
+                let utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID'; utterance.pitch = 1.2; utterance.rate = 0.95; 
+                let voices = window.speechSynthesis.getVoices();
+                let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
+                if(femaleVoice) utterance.voice = femaleVoice;
+                utterance.onend = () => { if(callback) callback(); };
+                window.speechSynthesis.speak(utterance);
+            } else {
+                if(callback) setTimeout(callback, 2000);
+            }
         }
-        const dirs = [ {v:new THREE.Vector3(1,0,0),n:"Kanan"}, {v:new THREE.Vector3(-1,0,0),n:"Kiri"}, {v:new THREE.Vector3(0,1,0),n:"Atas"}, {v:new THREE.Vector3(0,-1,0),n:"Bawah"}, {v:new THREE.Vector3(0,0,1),n:"Depan"}, {v:new THREE.Vector3(0,0,-1),n:"Belakang"} ];
-        function getDirName(vec) { let maxD = -1; let best = ""; dirs.forEach(d => { let dot = vec.dot(d.v); if(dot > maxD) { maxD = dot; best = d.n; } }); return best; }
+
+        function updateProgressBadge() {
+            let badge = document.getElementById('progress-badge');
+            let btnLanjut = document.getElementById('btn-lanjut-tp');
+            if(correctCountTP4 >= 10) {
+                badge.innerText = "⭐ POS SELESAI!";
+                badge.classList.remove('bg-yellow-400', 'text-slate-800');
+                badge.classList.add('bg-green-500', 'text-white', 'animate-pulse');
+                btnLanjut.classList.remove('hidden');
+            } else {
+                badge.innerText = `⭐ ${correctCountTP4}/10 Terkumpul`;
+                btnLanjut.classList.add('hidden');
+            }
+        }
+
+        const dirs = [ 
+            {v:new THREE.Vector3(1,0,0), n:"Kanan", icon:"➡️"}, 
+            {v:new THREE.Vector3(-1,0,0), n:"Kiri", icon:"⬅️"}, 
+            {v:new THREE.Vector3(0,1,0), n:"Atas", icon:"⬆️"}, 
+            {v:new THREE.Vector3(0,-1,0), n:"Bawah", icon:"⬇️"}, 
+            {v:new THREE.Vector3(0,0,1), n:"Depan", icon:"⏺"}, 
+            {v:new THREE.Vector3(0,0,-1), n:"Belakang", icon:"🔙"} 
+        ];
+
+        function getDirName(vec) { 
+            let maxD = -1; let best = ""; 
+            dirs.forEach(d => { let dot = vec.dot(d.v); if(dot > maxD) { maxD = dot; best = d.n; } }); 
+            return best; 
+        }
+
         function generateShape() {
-            group.clear(); group.rotation.set(0,0,0); baseMat = new THREE.MeshLambertMaterial({color:0x94a3b8}); goldMat = new THREE.MeshLambertMaterial({color:0xfab005, emissive:0xca8a04});
+            group.clear(); group.rotation.set(0,0,0); 
+            sudahMenjawabBenar = false; isRolling = false; alatYangDigunakan = "Tanpa Alat";
+            
+            document.getElementById('btn-start-roll').classList.remove('hidden');
+            document.getElementById('options-container').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('btn-slowmo').classList.add('hidden');
+            document.getElementById('question-text').innerText = "HAPALKAN POSISI SISI EMASNYA!";
+
+            // Render ulang pilihan jawaban agar bersih dari class abu-abu (reset)
+            renderOptions();
+
+            baseMat = new THREE.MeshLambertMaterial({color:0x94a3b8}); 
+            goldMat = new THREE.MeshLambertMaterial({color:0xfab005, emissive:0xca8a04});
+            
             let mats = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat];
-            const visibleIndices = [0, 2, 4]; cFaceIdx = visibleIndices[Math.floor(Math.random() * visibleIndices.length)];
-            mats[cFaceIdx] = goldMat; cNormal.copy(dirs[cFaceIdx].v);
-            const geo = new THREE.BoxGeometry(1.6, 1.6, 1.6); singleCubeMesh = new THREE.Mesh(geo, mats);
-            singleCubeMesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color:0x334155 }))); group.add(singleCubeMesh);
-            tRots = []; let nR = Math.floor(Math.random()*2)+1; let e = new THREE.Euler(0,0,0);
-            for(let i=0; i<nR; i++) { let axis=Math.floor(Math.random()*3); let d=Math.random()>0.5?1:-1; let a=(Math.PI/2)*d; if(axis===0){tRots.push({x:a,y:0,z:0});e.x+=a;} if(axis===1){tRots.push({x:0,y:a,z:0});e.y+=a;} if(axis===2){tRots.push({x:0,y:0,z:a});e.z+=a;} }
-            fDir = getDirName(cNormal.clone().applyEuler(e).round()); speak(`Perhatikan Sisi Emas menghadap ke ${getDirName(cNormal)}.`);
+            
+            // Pastikan sisi emas selalu terlihat di awal (Kanan, Atas, atau Depan)
+            const visibleIndices = [0, 2, 4]; 
+            cFaceIdx = visibleIndices[Math.floor(Math.random() * visibleIndices.length)];
+            mats[cFaceIdx] = goldMat; 
+            cNormal.copy(dirs[cFaceIdx].v);
+            
+            const geo = new THREE.BoxGeometry(1.6, 1.6, 1.6); 
+            singleCubeMesh = new THREE.Mesh(geo, mats);
+            singleCubeMesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color:0x334155, linewidth: 2 }))); 
+            group.add(singleCubeMesh);
+            
+            // Generate rute rotasi acak (2 hingga 3 kali putaran)
+            tRots = []; 
+            let nR = Math.floor(Math.random() * 2) + 2; 
+            let e = new THREE.Euler(0,0,0);
+            
+            for(let i=0; i<nR; i++) { 
+                let axis = Math.floor(Math.random()*3); 
+                let d = Math.random()>0.5 ? 1 : -1; 
+                let a = (Math.PI/2) * d; 
+                if(axis===0) { tRots.push({x:a, y:0, z:0}); e.x+=a; } 
+                if(axis===1) { tRots.push({x:0, y:a, z:0}); e.y+=a; } 
+                if(axis===2) { tRots.push({x:0, y:0, z:a}); e.z+=a; } 
+            }
+            
+            // Hitung di mana sisi emas akan berakhir
+            fDir = getDirName(cNormal.clone().applyEuler(e).round()); 
+            speak(`Pilot, perhatikan Sisi Emas yang sedang menghadap ke arah ${getDirName(cNormal)}.`);
         }
+
+        function renderOptions() {
+            const container = document.getElementById('options-container');
+            container.innerHTML = "";
+            dirs.forEach(d => {
+                let btn = document.createElement('button');
+                btn.className = "py-3 border-2 border-slate-200 rounded-xl font-bold text-slate-700 text-xs shadow-sm hover:border-purple-400 hover:bg-purple-50 transition-colors";
+                btn.innerHTML = `${d.icon} ${d.n}`;
+                btn.onclick = function() { checkAnswer(d.n, this); };
+                container.appendChild(btn);
+            });
+        }
+
         function init() {
-            scene = new THREE.Scene(); scene.background = new THREE.Color(0xf1f5f9); const container = document.getElementById('canvas-container');
-            camera = new THREE.PerspectiveCamera(50, container.clientWidth/container.clientHeight, 0.1, 1000); camera.position.set(3, 4, 6); camera.lookAt(0,0,0);
-            renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setSize(container.clientWidth, container.clientHeight); container.appendChild(renderer.domElement);
-            scene.add(new THREE.AmbientLight(0xffffff, 0.8)); const l = new THREE.DirectionalLight(0xffffff, 0.5); l.position.set(10, 20, 15); scene.add(l);
+            updateProgressBadge();
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0xf1f5f9); 
+            const container = document.getElementById('canvas-container');
+            
+            camera = new THREE.PerspectiveCamera(50, container.clientWidth/container.clientHeight, 0.1, 1000); 
+            camera.position.set(3, 4, 6); camera.lookAt(0,0,0);
+            
+            renderer = new THREE.WebGLRenderer({antialias:true}); 
+            renderer.setSize(container.clientWidth, container.clientHeight); 
+            container.appendChild(renderer.domElement);
+            
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8)); 
+            const l = new THREE.DirectionalLight(0xffffff, 0.6); l.position.set(10, 20, 15); scene.add(l);
+            const l2 = new THREE.DirectionalLight(0xffffff, 0.2); l2.position.set(-10, -5, -15); scene.add(l2);
+            
             group = new THREE.Group(); scene.add(group); generateShape(); animate();
             window.addEventListener('resize', () => { camera.aspect=container.clientWidth/container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); });
         }
+
         function startRolling() {
+            if (isRolling) return;
+            isRolling = true;
             document.getElementById('btn-start-roll').classList.add('hidden');
-            speak("Lacak pergerakannya!", () => {
+            
+            speak("Lacak putarannya... awas emasnya hilang!", () => {
+                // Sembunyikan sisi emas (semua abu-abu)
                 singleCubeMesh.material = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat];
-                let tl = gsap.timeline({ onComplete: () => { document.getElementById('options-container').classList.remove('hidden'); speak("Di mana Sisi Emas?"); } });
+                
+                let tl = gsap.timeline({ onComplete: () => { 
+                    document.getElementById('options-container').classList.remove('hidden'); 
+                    document.getElementById('question-text').innerText = "DI MANA POSISI SISI EMAS SEKARANG?";
+                    speak("Nah, di sebelah mana Sisi Emas itu mendarat?"); 
+                    isRolling = false;
+                }});
+                
                 tRots.forEach(r => tl.to(group.rotation, {x:`+=${r.x}`, y:`+=${r.y}`, z:`+=${r.z}`, duration:0.6, ease:"power1.inOut"}));
             });
         }
-        function checkAnswer(g) {
-            document.getElementById('options-container').classList.add('hidden');
-            let m = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat]; m[cFaceIdx]=goldMat; singleCubeMesh.material=m;
-            let isB = g === fDir; sendEvaluasiData("TP 4: Pilot", "Rotasi", isB?"Benar":"Salah");
-            if(isB) speak("Luar biasa! Benar.", () => document.getElementById('next-btn').classList.remove('hidden'));
-            else speak(`Salah, aslinya di ${fDir}.`, () => { document.getElementById('next-btn').classList.remove('hidden'); document.getElementById('btn-slowmo').classList.remove('hidden'); });
+
+        function checkAnswer(guessDir, btnElement) {
+            if(sudahMenjawabBenar || isRolling) return;
+
+            let isBenar = guessDir === fDir;
+            sendEvaluasiData("TP 4: Pilot Akrobatik", "Rotasi Mental", isBenar ? "Benar" : "Salah", alatYangDigunakan);
+
+            // Selalu munculkan tombol SlowMo begitu mereka mulai menjawab
+            document.getElementById('btn-slowmo').classList.remove('hidden');
+
+            if(isBenar) {
+                sudahMenjawabBenar = true;
+                
+                // Tambah Bintang
+                correctCountTP4++;
+                localStorage.setItem('tp4_correct_count', correctCountTP4);
+                if(correctCountTP4 >= 10) localStorage.setItem('geoquest_tp4_done', 'true');
+                updateProgressBadge();
+
+                // Munculkan kembali warna emas untuk membuktikan tebakan
+                let m = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat]; 
+                m[cFaceIdx] = goldMat; 
+                singleCubeMesh.material = m;
+
+                // Kunci UI
+                document.getElementById('options-container').style.pointerEvents = 'none';
+                btnElement.classList.remove('border-slate-200', 'hover:border-purple-400', 'hover:bg-purple-50');
+                btnElement.classList.add('bg-green-100', 'border-green-500', 'text-green-700'); 
+                
+                document.getElementById('btn-slowmo').classList.add('hidden');
+                
+                let txt = correctCountTP4 === 10 ? 
+                    "Sempurna! Kamu telah membuktikan dirimu sebagai Pilot Spasial sejati. 10 Bintang berhasil dikumpulkan!" :
+                    `Luar biasa, Pilot! Emasnya memang mendarat di ${fDir}.`;
+                
+                speak(txt, () => { document.getElementById('next-btn').classList.remove('hidden'); });
+
+            } else {
+                // Jawaban salah: salahkan tombolnya dan izinkan coba lagi
+                btnElement.disabled = true;
+                btnElement.classList.remove('border-slate-200', 'hover:border-purple-400', 'hover:bg-purple-50');
+                btnElement.classList.add('opacity-40', 'bg-red-50', 'border-red-300', 'cursor-not-allowed', 'text-slate-400');
+                
+                let wrongPhrases = [
+                    "Sayang sekali, bukan di situ. Coba tebak arah lain atau gunakan fitur Putar Lambat.",
+                    "Pesawatnya meleset! Ayo ingat-ingat lagi putarannya atau tekan tombol di bawah.",
+                    "Belum tepat, Pilot. Coba pikirkan kembali, ke mana arah putaran terakhirnya?"
+                ];
+                speak(wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)]);
+            }
         }
+
         function replaySlowMo() {
-            document.getElementById('btn-slowmo').classList.add('hidden'); speak("Putar lambat."); sendEvaluasiData("TP 4", "Rotasi", "Info", "Putar Lambat");
-            let m = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat]; m[cFaceIdx]=goldMat; singleCubeMesh.material=m;
-            gsap.to(group.rotation, {x:0,y:0,z:0,duration:1,onComplete:() => { let tl=gsap.timeline(); tRots.forEach(r=>tl.to(group.rotation,{x:`+=${r.x}`,y:`+=${r.y}`,z:`+=${r.z}`,duration:2,ease:"linear"})); } });
+            if(isRolling || sudahMenjawabBenar) return;
+            isRolling = true;
+            alatYangDigunakan = "Putar Lambat";
+            document.getElementById('btn-slowmo').classList.add('hidden'); 
+            
+            speak("Mari kita ulangi dengan Sisi Emas yang menyala dan putaran lambat.", () => {
+                // Kembalikan kubus ke posisi nol (awal)
+                gsap.to(group.rotation, {x:0, y:0, z:0, duration:1, onComplete:() => { 
+                    
+                    // Nyalakan warna emas
+                    let m = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat]; 
+                    m[cFaceIdx] = goldMat; 
+                    singleCubeMesh.material = m;
+
+                    // Putar ulang dengan durasi jauh lebih lama (Slow Motion)
+                    let tl = gsap.timeline({ onComplete: () => { isRolling = false; speak("Sekarang, tebak di mana posisi emasnya!"); } }); 
+                    tRots.forEach(r => tl.to(group.rotation, {x:`+=${r.x}`, y:`+=${r.y}`, z:`+=${r.z}`, duration:2, ease:"linear"})); 
+                }});
+            });
         }
-        function nextLevel() { document.getElementById('next-btn').classList.add('hidden'); document.getElementById('btn-start-roll').classList.remove('hidden'); document.getElementById('btn-slowmo').classList.add('hidden'); document.getElementById('options-container').classList.add('hidden'); generateShape(); }
+
+        function nextLevel() { 
+            generateShape(); 
+            document.getElementById('options-container').style.pointerEvents = 'auto'; 
+        }
+
         function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
         init();
     </script>
