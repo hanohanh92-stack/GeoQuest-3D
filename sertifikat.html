@@ -117,6 +117,45 @@
                 document.getElementById('cert-name').innerText = "PENJELAJAH ANONIM";
             }
         };
-    </script>
+    // Efek Ledakan Confetti saat sertifikat dibuka!
+    function shootConfetti() {
+        var duration = 3000;
+        var end = Date.now() + duration;
+
+        (function frame() {
+            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#fbbf24', '#38bdf8', '#34d399'] });
+            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#fbbf24', '#38bdf8', '#34d399'] });
+            if (Date.now() < end) requestAnimationFrame(frame);
+        }());
+    }
+
+    window.onload = function() {
+        let studentName = localStorage.getItem('geoquest_student_name');
+        if(studentName) {
+            document.getElementById('cert-name').innerText = studentName;
+            shootConfetti();
+            
+            // TRIK ANTI-EJA
+            let namaPanggilan = studentName.toLowerCase();
+            
+            // Pesan Suara Bangga dari Bu Geo AI
+            setTimeout(() => {
+                if ('speechSynthesis' in window) {
+                    let utterance = new SpeechSynthesisUtterance(`Selamat ya, ${namaPanggilan}! Kamu saaaangat luar biasa. Ibu guru saaaangat bangga padamu!`);
+                    utterance.lang = 'id-ID'; 
+                    utterance.pitch = 1.5; // NADA SANGAT CERIA!
+                    utterance.rate = 1.05; // LEBIH SEMANGAT!
+                    
+                    let voices = window.speechSynthesis.getVoices();
+                    let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
+                    if(femaleVoice) utterance.voice = femaleVoice;
+                    
+                    window.speechSynthesis.speak(utterance);
+                }
+            }, 1000);
+        } else {
+            document.getElementById('cert-name').innerText = "PENJELAJAH ANONIM";
+        }
+    };
 </body>
 </html>
