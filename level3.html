@@ -40,7 +40,7 @@
                 <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-white shadow-md border-2 border-white flex-shrink-0 text-2xl">👩‍🏫</div>
                 <div><h2 class="font-bold text-slate-800 uppercase tracking-tight">Bu Geo AI</h2><p class="text-[10px] text-teal-600 font-bold uppercase">Asisten Virtual Empatik</p></div>
             </div>
-            <div id="chat-bubble" class="text-slate-700 text-sm italic overflow-y-auto max-h-32 transition-all leading-relaxed font-medium">"Halo, Fotografer Hebat! Mari kita belajar memproyeksikan benda 3 dimensi."</div>
+            <div id="chat-bubble" class="text-slate-700 text-sm italic overflow-y-auto max-h-32 transition-all leading-relaxed font-medium">"Memuat instruksi..."</div>
         </div>
         
         <div class="bg-white p-6 rounded-3xl shadow-xl space-y-4 flex flex-col">
@@ -69,12 +69,15 @@
         // Progres Bintang Kelulusan
         let correctCountTP3 = parseInt(localStorage.getItem('tp3_correct_count')) || 0;
 
+        // FUNGSI SPEAK DIPERBARUI DENGAN SUARA CERIA
         function speak(text, callback = null) {
             document.getElementById('chat-bubble').innerText = `"${text}"`;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
                 let utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'id-ID'; utterance.pitch = 1.2; utterance.rate = 0.95; 
+                utterance.lang = 'id-ID'; 
+                utterance.pitch = 1.5; // Ceria
+                utterance.rate = 1.05; // Sedikit cepat
                 let voices = window.speechSynthesis.getVoices();
                 let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
                 if(femaleVoice) utterance.voice = femaleVoice;
@@ -178,10 +181,11 @@
             
             generateOptions(currentChallengeData); 
             
+            // REVISI BAHASA INSTRUKSI AWAL
             let greetings = [
-                "Perhatikan susunan ini. Jika Ibu foto dari atas, mana gambar cetak biru yang benar?",
-                "Tebaklah bayangan 2 dimensi dari benda ini jika dilihat tepat dari atas atapnya.",
-                "Bayangkan kamu adalah burung yang terbang di atas. Pilih gambar yang sesuai!"
+                "Bayangkan kamu sedang menerbangkan drone, lalu melihat bangunan ini lurus dari atas langit.",
+                "Tebaklah bayangan 2 dimensi dari benda ini jika difoto pakai kamera dari atas atapnya.",
+                "Ayo jadi fotografer! Pilih gambar cetak biru yang sesuai."
             ];
             if (!isFirst) speak(greetings[Math.floor(Math.random() * greetings.length)]);
             else setTimeout(() => speak(greetings[0]), 1000);
@@ -193,23 +197,28 @@
             
             for(let i = 0; i < 2; i++) {
                 const isThisCorrect = (i === correctPos); const matrix = isThisCorrect ? data.correctMatrix : data.wrongMatrix;
+                // Label A atau B untuk dipanggil dalam suara nanti
+                const labelHuruf = String.fromCharCode(65+i);
+                
                 const btn = document.createElement('button'); 
                 btn.className = "p-4 border-4 border-slate-100 rounded-2xl bg-white shadow-sm flex flex-col items-center justify-center gap-3 hover:border-teal-400 hover:bg-teal-50 transition-all";
                 
-                // MENGIRIM ELEMEN BTN UNTUK BISA DIUBAH WARNANYA SAAT SALAH
-                btn.onclick = function() { checkAnswer(isThisCorrect, this); };
+                btn.onclick = function() { checkAnswer(isThisCorrect, this, labelHuruf); };
                 
                 let gridHTML = `<div style="display: grid; grid-template-columns: repeat(${data.cols}, 1fr); gap: 2px; background: #e2e8f0; padding: 4px; width: 80px; aspect-ratio: ${data.cols} / ${data.rows}; border-radius: 4px;">`;
                 matrix.forEach(row => row.forEach(cell => gridHTML += `<div class="${cell === 1 ? 'bg-teal-500 border border-teal-700' : 'bg-transparent'} rounded-[2px]"></div>`));
-                gridHTML += `</div><span class="font-bold text-[11px] text-slate-500 uppercase tracking-widest">Cetak Biru ${String.fromCharCode(65+i)}</span>`;
+                gridHTML += `</div><span class="font-bold text-[11px] text-slate-500 uppercase tracking-widest">Cetak Biru ${labelHuruf}</span>`;
                 btn.innerHTML = gridHTML; container.appendChild(btn);
             }
         }
 
-        function checkAnswer(correct, btnElement) {
+        // FUNGSI CEK JAWABAN DENGAN SUARA EMPATIK & KOREKSI
+        function checkAnswer(correct, btnElement, labelHuruf) {
             if(sudahMenjawabBenar) return; // Jika sudah terjawab benar, kunci tombolnya.
 
             sendEvaluasiData("TP 3: Fotografer", currentChallengeData.shapeName, correct ? "Benar" : "Salah");
+            
+            let namaPanggilan = (localStorage.getItem('geoquest_student_name') || "").toLowerCase();
             
             if (correct) {
                 sudahMenjawabBenar = true;
@@ -222,9 +231,9 @@
                 btnElement.classList.remove('border-slate-100', 'hover:border-teal-400', 'hover:bg-teal-50');
                 btnElement.classList.add('bg-green-100', 'border-green-500', 'shadow-md'); 
                 
-                let txt = correctCountTP3 === 10 ? 
-                    "Selamat! Kamu berhasil menjadi fotografer ahli dan mengumpulkan 10 Bintang!" :
-                    "Tepat sekali! Mari kita buktikan dengan menerbangkan kamera ke atas.";
+                let txt = correctCountTP3 >= 10 ? 
+                    `Selamat, ${namaPanggilan}! Kamu berhasil menjadi fotografer ahli dan mengumpulkan 10 Bintang!` :
+                    `Keren sekali, ${namaPanggilan}! Foto dari langitmu sangat sempurna! Mari kita buktikan.`;
                 
                 speak(txt, () => { 
                     // Animasi Fly-Over ke Atas
@@ -233,7 +242,7 @@
                         onUpdate: () => camera.lookAt(0, 0, 0), 
                         onComplete: () => { 
                             document.getElementById('view-label').innerText = "📷 Lensa: Tampak Atas (Top View)"; 
-                            if(correctCountTP3 !== 10) speak("Lihat, bentuknya persis seperti cetak biru yang kamu pilih!");
+                            if(correctCountTP3 < 10) speak("Lihat, bentuk aslinya dari atas persis seperti cetak biru yang kamu pilih!");
                             document.getElementById('next-btn').classList.remove('hidden'); 
                         } 
                     }); 
@@ -244,12 +253,12 @@
                 btnElement.classList.remove('border-slate-100', 'hover:border-teal-400', 'hover:bg-teal-50');
                 btnElement.classList.add('opacity-40', 'bg-red-50', 'border-red-300', 'cursor-not-allowed');
                 
-                let wrongPhrases = [
-                    "Bukan yang itu. Coba abaikan bagian tingginya dan fokus pada pola dasar di lantainya.",
-                    "Hampir! Ingat, kalau dilihat dari atas, bagian yang menumpuk tidak akan kelihatan.",
-                    "Tebakanmu kurang tepat. Coba pilih gambar cetak biru sebelahnya."
-                ];
-                speak(wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)]);
+                // Cari tahu kunci jawaban yang benar (A atau B) untuk diucapkan
+                let correctLabel = (labelHuruf === 'A') ? 'B' : 'A';
+
+                // LOGIKA SALAH EMPATIK + MEMBERI TAHU JAWABAN BENAR
+                let txt = `Hampir pas! Jawaban yang benar adalah Cetak Biru ${correctLabel}. Ingat ya, jika dilihat dari atas langit, kita tidak bisa melihat tinggi bangunannya. Coba abaikan bagian tingginya dan klik Cetak Biru ${correctLabel} untuk melihat buktinya!`;
+                speak(txt, null);
             }
         }
 
