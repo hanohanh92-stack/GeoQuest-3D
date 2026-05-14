@@ -44,7 +44,7 @@
                 <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-md border-2 border-white flex-shrink-0 text-2xl">👩‍🏫</div>
                 <div><h2 class="font-bold text-slate-800 uppercase tracking-tight">Bu Geo AI</h2><p class="text-[10px] text-sky-600 font-bold uppercase">Asisten Virtual Empatik</p></div>
             </div>
-            <div id="chat-bubble" class="text-slate-700 text-sm italic overflow-y-auto max-h-32 transition-all leading-relaxed font-medium">"Halo, Arsitek Hebat! Mari tebak jumlah kubus penyusun bangun ini."</div>
+            <div id="chat-bubble" class="text-slate-700 text-sm italic overflow-y-auto max-h-32 transition-all leading-relaxed font-medium">"Memuat instruksi..."</div>
         </div>
         
         <div class="bg-white p-6 rounded-3xl shadow-xl space-y-4 flex flex-col">
@@ -71,12 +71,15 @@
 
         let correctCountTP2 = parseInt(localStorage.getItem('tp2_correct_count')) || 0;
 
+        // FUNGSI SPEAK DIPERBARUI DENGAN LOGIKA SUARA CERIA
         function speak(text, callback = null) {
             document.getElementById('chat-bubble').innerText = `"${text}"`;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
                 let utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'id-ID'; utterance.pitch = 1.2; utterance.rate = 0.95; 
+                utterance.lang = 'id-ID'; 
+                utterance.pitch = 1.5; // Ceria
+                utterance.rate = 1.05; // Sedikit cepat
                 let voices = window.speechSynthesis.getVoices();
                 let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
                 if(femaleVoice) utterance.voice = femaleVoice;
@@ -144,8 +147,9 @@
             });
             new THREE.Box3().setFromObject(group).getCenter(group.position).multiplyScalar(-1);
             generateOptions(correctCubesTotal); 
-            let greetings = ["Halo, Arsitek! Coba tebak, ada berapa total kubus?", "Awas, pasti ada kubus yang tersembunyi di bawah.", "Perhatikan baik-baik susunannya ya."];
-            speak(greetings[Math.floor(Math.random() * greetings.length)]);
+            
+            // REVISI BAHASA INSTRUKSI AWAL
+            speak("Ayo jadi arsitek! Coba perhatikan baik-baik, lalu hitung ada berapa balok penyusunnya, termasuk yang bersembunyi di bawah ya.");
         }
 
         function generateOptions(correctAnswer) {
@@ -160,9 +164,13 @@
             });
         }
 
+        // FUNGSI CEK JAWABAN DENGAN SUARA EMPATIK & KOREKSI
         function checkAnswer(isCorrect, btnElement) {
             if(sudahMenjawabBenar) return;
             sendEvaluasiData("TP 2: Arsitek Ruang", "Menghitung Susunan Balok", isCorrect ? "Benar" : "Salah", alatYangDigunakan);
+            
+            let namaPanggilan = (localStorage.getItem('geoquest_student_name') || "").toLowerCase();
+
             document.getElementById('btn-xray').classList.remove('hidden'); document.getElementById('btn-explode').classList.remove('hidden');
 
             if (isCorrect) {
@@ -177,17 +185,19 @@
                 btnElement.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
                 if(!isExploded) toggleExplode(); 
 
-                let txt = correctCountTP2 === 10 ? 
-                    `Luar biasa! Benar, ada ${correctCubesTotal} kubus. Kamu telah mengumpulkan 10 Bintang! Silakan Lanjut ke TP 3.` :
-                    `Tepat sekali! Total ada ${correctCubesTotal} kubus. Lanjutkan ke soal berikutnya.`;
+                let txt = correctCountTP2 >= 10 ? 
+                    `Luar biasa, ${namaPanggilan}! Benar, ada ${correctCubesTotal} kubus. Kamu telah mengumpulkan 10 Bintang! Silakan Lanjut ke TP 3.` :
+                    `Wah, hitunganmu sangat jeli, ${namaPanggilan}! Tepat sekali ada ${correctCubesTotal} balok. Hebat sekali!`;
 
                 speak(txt, () => { document.getElementById('next-btn').classList.remove('hidden'); });
             } else {
                 btnElement.disabled = true;
                 btnElement.classList.remove('hover:bg-sky-50', 'hover:border-sky-400');
                 btnElement.classList.add('opacity-50', 'bg-red-50', 'border-red-300', 'cursor-not-allowed');
-                let wrongPhrases = ["Bukan yang itu. Ayo gunakan fitur Sinar-X atau Bongkar!", "Masih kurang tepat. Coba Sinar-X lalu hitung lagi.", "Ah salah. Tidak apa-apa, bongkar bangunannya dan hitung perlahan."];
-                speak(wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)]);
+                
+                // LOGIKA SALAH: MEMBERI TAHU JAWABAN BENAR + MENGAJAK PAKAI ALAT BANTU
+                let txt = `Sedikit lagi tepat! Jawaban yang benar adalah ${correctCubesTotal} balok. Ingat, ada balok yang tertumpuk di bagian bawah lho. Yuk, klik angka ${correctCubesTotal} dan nyalakan Sinar X atau Bongkar susunannya untuk membuktikannya!`;
+                speak(txt, null);
             }
         }
 
