@@ -43,7 +43,7 @@
                 <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white shadow-md border-2 border-white flex-shrink-0 text-2xl">👩‍🏫</div>
                 <div><h2 class="font-bold text-slate-800 uppercase tracking-tight">Bu Geo AI</h2><p class="text-[10px] text-purple-600 font-bold uppercase">Asisten Virtual Empatik</p></div>
             </div>
-            <div id="chat-bubble" class="text-slate-700 text-sm italic overflow-y-auto max-h-32 transition-all leading-relaxed font-medium">"Halo, Pilot Spasial! Perhatikan letak Sisi Emas pada kubus ini."</div>
+            <div id="chat-bubble" class="text-slate-700 text-sm italic overflow-y-auto max-h-32 transition-all leading-relaxed font-medium">"Memuat instruksi..."</div>
         </div>
         
         <div class="bg-white p-6 rounded-3xl shadow-xl space-y-4 flex flex-col">
@@ -80,12 +80,15 @@
         // Progres Bintang Kelulusan
         let correctCountTP4 = parseInt(localStorage.getItem('tp4_correct_count')) || 0;
 
+        // FUNGSI SPEAK DIPERBARUI DENGAN SUARA CERIA
         function speak(text, callback = null) {
             document.getElementById('chat-bubble').innerText = `"${text}"`;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
                 let utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'id-ID'; utterance.pitch = 1.2; utterance.rate = 0.95; 
+                utterance.lang = 'id-ID'; 
+                utterance.pitch = 1.5; // Ceria
+                utterance.rate = 1.05; // Sedikit Cepat
                 let voices = window.speechSynthesis.getVoices();
                 let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
                 if(femaleVoice) utterance.voice = femaleVoice;
@@ -135,7 +138,6 @@
             document.getElementById('btn-slowmo').classList.add('hidden');
             document.getElementById('question-text').innerText = "HAPALKAN POSISI SISI EMASNYA!";
 
-            // Render ulang pilihan jawaban agar bersih dari class abu-abu (reset)
             renderOptions();
 
             baseMat = new THREE.MeshLambertMaterial({color:0x94a3b8}); 
@@ -170,7 +172,9 @@
             
             // Hitung di mana sisi emas akan berakhir
             fDir = getDirName(cNormal.clone().applyEuler(e).round()); 
-            speak(`Pilot, perhatikan Sisi Emas yang sedang menghadap ke arah ${getDirName(cNormal)}.`);
+            
+            // REVISI BAHASA INSTRUKSI AWAL
+            speak(`Pilot, perhatikan baik-baik Sisi Emas yang sedang menghadap ke arah ${getDirName(cNormal)}.`);
         }
 
         function renderOptions() {
@@ -210,7 +214,7 @@
             isRolling = true;
             document.getElementById('btn-start-roll').classList.add('hidden');
             
-            speak("Lacak putarannya... awas emasnya hilang!", () => {
+            speak("Ayo bayangkan bentuk ini berguling secara perlahan. Awas emasnya hilang!", () => {
                 // Sembunyikan sisi emas (semua abu-abu)
                 singleCubeMesh.material = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat];
                 
@@ -225,54 +229,48 @@
             });
         }
 
+        // FUNGSI CEK JAWABAN DENGAN SUARA EMPATIK & KOREKSI
         function checkAnswer(guessDir, btnElement) {
             if(sudahMenjawabBenar || isRolling) return;
 
             let isBenar = guessDir === fDir;
             sendEvaluasiData("TP 4: Pilot Akrobatik", "Rotasi Mental", isBenar ? "Benar" : "Salah", alatYangDigunakan);
+            
+            let namaPanggilan = (localStorage.getItem('geoquest_student_name') || "").toLowerCase();
 
-            // Selalu munculkan tombol SlowMo begitu mereka mulai menjawab
             document.getElementById('btn-slowmo').classList.remove('hidden');
 
             if(isBenar) {
                 sudahMenjawabBenar = true;
-                
-                // Tambah Bintang
                 correctCountTP4++;
                 localStorage.setItem('tp4_correct_count', correctCountTP4);
                 if(correctCountTP4 >= 10) localStorage.setItem('geoquest_tp4_done', 'true');
                 updateProgressBadge();
 
-                // Munculkan kembali warna emas untuk membuktikan tebakan
                 let m = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat]; 
                 m[cFaceIdx] = goldMat; 
                 singleCubeMesh.material = m;
 
-                // Kunci UI
                 document.getElementById('options-container').style.pointerEvents = 'none';
                 btnElement.classList.remove('border-slate-200', 'hover:border-purple-400', 'hover:bg-purple-50');
                 btnElement.classList.add('bg-green-100', 'border-green-500', 'text-green-700'); 
                 
                 document.getElementById('btn-slowmo').classList.add('hidden');
                 
-                let txt = correctCountTP4 === 10 ? 
-                    "Sempurna! Kamu telah membuktikan dirimu sebagai Pilot Spasial sejati. 10 Bintang berhasil dikumpulkan!" :
-                    `Luar biasa, Pilot! Emasnya memang mendarat di ${fDir}.`;
+                let txt = correctCountTP4 >= 10 ? 
+                    `Sempurna, ${namaPanggilan}! Kamu telah membuktikan dirimu sebagai Pilot Spasial sejati. 10 Bintang berhasil dikumpulkan!` :
+                    `Pilot akrobatik yang luar biasa! Tebakan arahmu tepat sekali, ${namaPanggilan}! Emasnya memang mendarat di ${fDir}.`;
                 
                 speak(txt, () => { document.getElementById('next-btn').classList.remove('hidden'); });
 
             } else {
-                // Jawaban salah: salahkan tombolnya dan izinkan coba lagi
                 btnElement.disabled = true;
                 btnElement.classList.remove('border-slate-200', 'hover:border-purple-400', 'hover:bg-purple-50');
                 btnElement.classList.add('opacity-40', 'bg-red-50', 'border-red-300', 'cursor-not-allowed', 'text-slate-400');
                 
-                let wrongPhrases = [
-                    "Sayang sekali, bukan di situ. Coba tebak arah lain atau gunakan fitur Putar Lambat.",
-                    "Pesawatnya meleset! Ayo ingat-ingat lagi putarannya atau tekan tombol di bawah.",
-                    "Belum tepat, Pilot. Coba pikirkan kembali, ke mana arah putaran terakhirnya?"
-                ];
-                speak(wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)]);
+                // LOGIKA SALAH EMPATIK + MEMBERI TAHU JAWABAN BENAR
+                let txt = `Hampir mendarat dengan pas! Jawaban yang benar adalah posisi ${fDir}. Jika digulingkan ke arah tersebut, posisi sisinya akan berpindah. Ayo klik posisi ${fDir} dan gunakan tombol putar lambat untuk melihat pergerakannya!`;
+                speak(txt, null);
             }
         }
 
@@ -283,15 +281,12 @@
             document.getElementById('btn-slowmo').classList.add('hidden'); 
             
             speak("Mari kita ulangi dengan Sisi Emas yang menyala dan putaran lambat.", () => {
-                // Kembalikan kubus ke posisi nol (awal)
                 gsap.to(group.rotation, {x:0, y:0, z:0, duration:1, onComplete:() => { 
                     
-                    // Nyalakan warna emas
                     let m = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat]; 
                     m[cFaceIdx] = goldMat; 
                     singleCubeMesh.material = m;
 
-                    // Putar ulang dengan durasi jauh lebih lama (Slow Motion)
                     let tl = gsap.timeline({ onComplete: () => { isRolling = false; speak("Sekarang, tebak di mana posisi emasnya!"); } }); 
                     tRots.forEach(r => tl.to(group.rotation, {x:`+=${r.x}`, y:`+=${r.y}`, z:`+=${r.z}`, duration:2, ease:"linear"})); 
                 }});
