@@ -6,7 +6,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoQuest 3D - TP 3: Sang Fotografer</title>
+    <title>GeoQuest 3D - Pos 3: Sang Fotografer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -23,9 +23,9 @@
         <div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
             <a href="index.html" class="bg-white/90 hover:bg-white text-slate-800 px-4 py-2 rounded-full text-xs font-bold shadow-lg transition flex items-center justify-center gap-2 border border-slate-200 w-max">⬅️ Kembali ke Gerbang Utama</a>
             
-            <a href="level4.html" id="btn-lanjut-tp" class="bg-green-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg border border-green-600 hover:bg-green-600 transition animate-bounce hidden w-max">🚀 Lanjut ke TP Terakhir (TP 4)</a>
+            <a href="level4.html" id="btn-lanjut-tp" class="bg-green-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg border border-green-600 hover:bg-green-600 transition animate-bounce hidden w-max">🚀 Lanjut ke Pos Terakhir (Pos 4)</a>
 
-            <span id="view-label" class="bg-teal-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider w-max">📷 Lensa: Perspektif (Miring)</span>
+            <span id="view-label" class="bg-teal-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider w-max">📷 Posisi Kamera: Miring</span>
         </div>
 
         <div class="absolute top-4 right-4 z-10">
@@ -66,18 +66,16 @@
         let isCorrect = false; let currentChallengeData = null; 
         let sudahMenjawabBenar = false;
 
-        // Progres Bintang Kelulusan
         let correctCountTP3 = parseInt(localStorage.getItem('tp3_correct_count')) || 0;
 
-        // FUNGSI SPEAK DIPERBARUI DENGAN SUARA CERIA
         function speak(text, callback = null) {
             document.getElementById('chat-bubble').innerText = `"${text}"`;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
                 let utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'id-ID'; 
-                utterance.pitch = 1.5; // Ceria
-                utterance.rate = 1.05; // Sedikit cepat
+                utterance.pitch = 1.5; 
+                utterance.rate = 1.05; 
                 let voices = window.speechSynthesis.getVoices();
                 let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
                 if(femaleVoice) utterance.voice = femaleVoice;
@@ -118,7 +116,6 @@
             let hasStacking = false; 
             baseGrid.forEach(coord => {
                 let [x, z] = coord.split(',').map(Number); 
-                // Random height agar benda terlihat 3D berundak
                 let height = Math.floor(Math.random() * 3) + 1; 
                 if (height > 1) hasStacking = true;
                 for(let y = 0; y < height; y++) { positions.push({x: x, y: y, z: z}); }
@@ -166,11 +163,10 @@
             group.clear(); 
             sudahMenjawabBenar = false;
             document.getElementById('next-btn').classList.add('hidden');
-            document.getElementById('view-label').innerText = "📷 Lensa: Perspektif (Miring)";
+            document.getElementById('view-label').innerText = "📷 Posisi Kamera: Miring";
             
             currentChallengeData = generateDynamicChallenge(); 
             
-            // Warna Teal (Hijau Tosca) yang cantik
             const material = new THREE.MeshLambertMaterial({ color: 0x14b8a6 }); 
             currentChallengeData.positions.forEach(p => {
                 const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
@@ -181,10 +177,9 @@
             
             generateOptions(currentChallengeData); 
             
-            // REVISI BAHASA INSTRUKSI AWAL
             let greetings = [
                 "Bayangkan kamu sedang menerbangkan drone, lalu melihat bangunan ini lurus dari atas langit.",
-                "Tebaklah bayangan 2 dimensi dari benda ini jika difoto pakai kamera dari atas atapnya.",
+                "Tebaklah bayangan dua dimensi dari benda ini jika difoto pakai kamera dari atas atapnya.",
                 "Ayo jadi fotografer! Pilih gambar cetak biru yang sesuai."
             ];
             if (!isFirst) speak(greetings[Math.floor(Math.random() * greetings.length)]);
@@ -197,7 +192,6 @@
             
             for(let i = 0; i < 2; i++) {
                 const isThisCorrect = (i === correctPos); const matrix = isThisCorrect ? data.correctMatrix : data.wrongMatrix;
-                // Label A atau B untuk dipanggil dalam suara nanti
                 const labelHuruf = String.fromCharCode(65+i);
                 
                 const btn = document.createElement('button'); 
@@ -212,9 +206,8 @@
             }
         }
 
-        // FUNGSI CEK JAWABAN DENGAN SUARA EMPATIK & KOREKSI
         function checkAnswer(correct, btnElement, labelHuruf) {
-            if(sudahMenjawabBenar) return; // Jika sudah terjawab benar, kunci tombolnya.
+            if(sudahMenjawabBenar) return; 
 
             sendEvaluasiData("TP 3: Fotografer", currentChallengeData.shapeName, correct ? "Benar" : "Salah");
             
@@ -236,59 +229,41 @@
                     `Keren sekali, ${namaPanggilan}! Foto dari langitmu sangat sempurna! Mari kita buktikan.`;
                 
                 speak(txt, () => { 
-                    // Animasi Fly-Over ke Atas
                     gsap.to(camera.position, { 
                         x: 0, y: 18, z: 0, duration: 2, 
                         onUpdate: () => camera.lookAt(0, 0, 0), 
                         onComplete: () => { 
-                            document.getElementById('view-label').innerText = "📷 Lensa: Tampak Atas (Top View)"; 
+                            document.getElementById('view-label').innerText = "📷 Posisi Kamera: Tampak Atas"; 
                             if(correctCountTP3 < 10) speak("Lihat, bentuk aslinya dari atas persis seperti cetak biru yang kamu pilih!");
                             document.getElementById('next-btn').classList.remove('hidden'); 
                         } 
                     }); 
                 });
             } else {
-                // Jawaban Salah: matikan tombol dan beri warna pudar
                 btnElement.disabled = true;
                 btnElement.classList.remove('border-slate-100', 'hover:border-teal-400', 'hover:bg-teal-50');
                 btnElement.classList.add('opacity-40', 'bg-red-50', 'border-red-300', 'cursor-not-allowed');
                 
-                // Cari tahu kunci jawaban yang benar (A atau B) untuk diucapkan
                 let correctLabel = (labelHuruf === 'A') ? 'B' : 'A';
 
-                // LOGIKA SALAH EMPATIK + MEMBERI TAHU JAWABAN BENAR
-                let txt = `Hampir pas! Jawaban yang benar adalah Cetak Biru ${correctLabel}. Ingat ya, jika dilihat dari atas langit, kita tidak bisa melihat tinggi bangunannya. Coba abaikan bagian tingginya dan klik Cetak Biru ${correctLabel} untuk melihat buktinya!`;
+                // LOGIKA SALAH: MEMBERITAHU JAWABAN BENAR EKSPLISIT
+                let txt = `Hampir pas! Jawaban yang benar adalah Cetak Biru ${correctLabel}. Ingat ya, jika dilihat dari atas langit, kita tidak bisa melihat tinggi bangunannya. Coba klik Cetak Biru ${correctLabel} untuk melihat buktinya!`;
                 speak(txt, null);
             }
         }
 
         function nextLevel() { 
-            // Reset posisi kamera untuk soal berikutnya
             document.getElementById('options-container').style.pointerEvents = 'auto'; 
             gsap.to(camera.position, { x: 10, y: 10, z: 10, duration: 1.5, onUpdate: () => camera.lookAt(0, 0, 0), onComplete: () => loadLevel(false) }); 
         }
         
         function animate() { 
             requestAnimationFrame(animate); 
-            // Putar objek HANYA ketika di mode Perspektif, hentikan saat kamera di atas (agar mudah dicocokkan)
             if(camera.position.y < 15) group.rotation.y += 0.005; 
-            else group.rotation.y = 0; // Kunci rotasi agar tampak atasnya rapi
+            else group.rotation.y = 0; 
             renderer.render(scene, camera); 
         }
         init();
-    </script>
-<script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                .then(registration => {
-                    console.log('ServiceWorker sukses didaftarkan dengan scope: ', registration.scope);
-                })
-                .catch(err => {
-                    console.log('ServiceWorker gagal didaftarkan: ', err);
-                });
-            });
-        }
     </script>
 </body>
 </html>
