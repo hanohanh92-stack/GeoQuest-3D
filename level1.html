@@ -85,12 +85,15 @@
 
         if('speechSynthesis' in window) { window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); }; }
 
+        // FUNGSI SPEAK DIPERBARUI AGAR LEBIH CERIA
         function speak(text, callback) {
             document.getElementById('chat-bubble').innerText = `"${text}"`;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
                 let utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'id-ID'; utterance.rate = 0.95; utterance.pitch = 1.2; 
+                utterance.lang = 'id-ID'; 
+                utterance.rate = 1.05; // Dipercepat sedikit
+                utterance.pitch = 1.5; // Nada tinggi ceria khas Bu Geo
                 let voices = window.speechSynthesis.getVoices();
                 let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
                 if(femaleVoice) utterance.voice = femaleVoice;
@@ -108,7 +111,7 @@
                 badge.innerText = "⭐ POS SELESAI!";
                 badge.classList.remove('bg-yellow-400', 'text-slate-800');
                 badge.classList.add('bg-green-500', 'text-white', 'animate-pulse');
-                btnLanjut.classList.remove('hidden'); // Membuka tombol rahasia
+                btnLanjut.classList.remove('hidden'); 
             } else {
                 badge.innerText = `⭐ ${correctCount}/10 Terkumpul`;
                 btnLanjut.classList.add('hidden');
@@ -198,12 +201,15 @@
             let zoomZ = template.name.includes("Huruf L") || template.name.includes("Sayap") || template.name.includes("Kotak Kecil") ? 15 : 13;
             gsap.to(camera.position, {y:9, z:zoomZ, duration:1, onUpdate:()=>camera.lookAt(0,0,0)});
             
-            let greetings = ["Bentuk baru! Cermati pertanyaannya.", "Putar jaring-jaring ini di kepalamu pelan-pelan.", "Fokus pada warna yang ditanyakan ya."];
+            // REVISI BAHASA INSTRUKSI AWAL
+            let greetings = ["Bentuk baru! Cermati pertanyaannya.", "Ayo, bayangkan jaring-jaring ini melipat menjadi bangun ruang secara perlahan.", "Fokus pada warna yang ditanyakan ya."];
             speak(greetings[Math.floor(Math.random() * greetings.length)], null);
         }
 
+        // FUNGSI CHECK DENGAN LOGIKA SUARA EMPATIK & KOREKSI
         function check(win, cName, givenColorName, tName, btnElement, qMode) {
             sendData(tName + " (" + qMode + ")", win?"Benar":"Salah");
+            let namaPanggilan = (localStorage.getItem('geoquest_student_name') || "").toLowerCase();
             
             if (win) {
                 correctCount++;
@@ -215,14 +221,14 @@
                 btnElement.classList.remove('hover:bg-amber-50', 'hover:border-amber-400');
                 btnElement.classList.add('bg-green-100', 'border-green-500', 'text-green-700'); 
                 
-                let txt = correctCount === 10 ? 
-                    "Selamat! Kamu telah mengumpulkan 10 Bintang dan menaklukkan pos ini! Silakan klik tombol Lanjut ke TP 2." :
-                    "Hebat! Tebakanmu benar. Mari kita buktikan dengan melipatnya.";
+                let txt = correctCount >= 10 ? 
+                    `Selamat, ${namaPanggilan}! Kamu mengumpulkan 10 Bintang dan menaklukkan pos ini! Silakan klik tombol Lanjut.` :
+                    `Luar biasa, ${namaPanggilan}! Tebakan lipatanmu super akurat! Mari kita buktikan.`;
 
                 speak(txt, () => {
                     pivotsToAnimate.forEach((a,i) => gsap.to(a.piv.rotation, {[a.axis]:a.angle, duration:1.5, delay:i*0.1}));
                     gsap.to(camera.position, {y:5, z:11, duration:2, onUpdate:()=>camera.lookAt(0,0.5,0), onComplete:()=> {
-                        if(correctCount !== 10) speak(qMode === "TUTUP" ? `Menutup tepat di atas warna ${givenColorName}!` : `Alasnya adalah ${cName}!`);
+                        if(correctCount < 10) speak(qMode === "TUTUP" ? `Menutup tepat di atas warna ${givenColorName}!` : `Alasnya adalah ${cName}!`);
                         document.getElementById('reset-fold-btn').classList.remove('hidden'); 
                         document.getElementById('next-btn').classList.remove('hidden');
                     }});
@@ -231,7 +237,10 @@
                 btnElement.disabled = true;
                 btnElement.classList.remove('hover:bg-amber-50', 'hover:border-amber-400');
                 btnElement.classList.add('opacity-50', 'bg-red-50', 'border-red-300', 'cursor-not-allowed'); 
-                speak("Kurang tepat. Ayo coba tebak warna lain!", null);
+                
+                // LOGIKA FEEDBACK EMPATIK SAAT SALAH + KOREKSI
+                let txt = `Hampir saja! Jawaban yang tepat adalah warna ${currentTargetColor}, karena sisi tutup dan alas tidak akan pernah bersentuhan dan selalu melompati satu kotak. Ayo klik warna ${currentTargetColor} untuk membuktikannya!`;
+                speak(txt, null);
             }
         }
         
