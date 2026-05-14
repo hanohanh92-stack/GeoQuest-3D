@@ -6,7 +6,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoQuest 3D - TP 2: Arsitek Ruang</title>
+    <title>GeoQuest 3D - Pos 2: Arsitek Ruang</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -19,19 +19,14 @@
     
     <div class="w-full h-[50vh] md:min-h-[500px] md:flex-1 relative bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
         <div id="canvas-container" class="absolute inset-0"></div>
-        
         <div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
             <a href="index.html" class="bg-white/90 hover:bg-white text-slate-800 px-4 py-2 rounded-full text-xs font-bold shadow-lg transition flex items-center justify-center gap-2 border border-slate-200 w-max">⬅️ Kembali ke Gerbang Utama</a>
-            
-            <a href="level3.html" id="btn-lanjut-tp" class="bg-green-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg border border-green-600 hover:bg-green-600 transition animate-bounce hidden w-max">🚀 Lanjut ke TP 3: Sang Fotografer</a>
-
-            <span id="view-label" class="bg-sky-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider w-max">TP 2: Spatial Structuring</span>
+            <a href="level3.html" id="btn-lanjut-tp" class="bg-green-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg border border-green-600 hover:bg-green-600 transition animate-bounce hidden w-max">🚀 Lanjut ke Pos 3: Sang Fotografer</a>
+            <span id="view-label" class="bg-sky-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider w-max">Pos 2: Menghitung Susunan Balok</span>
         </div>
-
         <div class="absolute top-4 right-4 z-10">
             <span id="progress-badge" class="bg-yellow-400 text-slate-800 px-4 py-2 rounded-full text-xs font-bold shadow-lg border-2 border-white">⭐ 0/10 Terkumpul</span>
         </div>
-
         <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
             <button id="btn-xray" onclick="toggleXRay()" class="bg-slate-800/90 hover:bg-sky-500 text-white px-5 py-3 rounded-full text-xs font-bold shadow-xl transition transform hover:-translate-y-1 hidden border-2 border-slate-700">🔍 Nyalakan Sinar-X</button>
             <button id="btn-explode" onclick="toggleExplode()" class="bg-slate-800/90 hover:bg-sky-500 text-white px-5 py-3 rounded-full text-xs font-bold shadow-xl transition transform hover:-translate-y-1 hidden border-2 border-slate-700">💥 Bongkar Susunan</button>
@@ -58,55 +53,41 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzh2BuLexfDG2v_yGvYuYFK_QjRROZN6qzieW0XrGaW1q5pX9k889J4vw4ktH16Y27tmA/exec";
         function sendEvaluasiData(tpName, soalName, status, alatBantu = "Tanpa Alat") {
             const studentName = localStorage.getItem('geoquest_student_name') || "Anonim";
-            fetch(GAS_URL, {
-                method: 'POST', mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nama: studentName, tp: tpName, soal: soalName, status: status, alatBantu: alatBantu })
-            }).catch(err => console.error("Offline mode"));
+            fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nama: studentName, tp: tpName, soal: soalName, status: status, alatBantu: alatBantu }) }).catch(err => console.error("Offline mode"));
         }
 
         let scene, camera, renderer, group;
         let isXRayOn = false; let isExploded = false; let cubesData = []; 
         let correctCubesTotal = 0; let alatYangDigunakan = "Tanpa Alat"; let sudahMenjawabBenar = false;
-
         let correctCountTP2 = parseInt(localStorage.getItem('tp2_correct_count')) || 0;
 
-        // FUNGSI SPEAK DIPERBARUI DENGAN LOGIKA SUARA CERIA
         function speak(text, callback = null) {
             document.getElementById('chat-bubble').innerText = `"${text}"`;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
                 let utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'id-ID'; 
-                utterance.pitch = 1.5; // Ceria
-                utterance.rate = 1.05; // Sedikit cepat
+                utterance.lang = 'id-ID'; utterance.pitch = 1.5; utterance.rate = 1.05; 
                 let voices = window.speechSynthesis.getVoices();
                 let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
                 if(femaleVoice) utterance.voice = femaleVoice;
                 utterance.onend = () => { if(callback) callback(); };
                 window.speechSynthesis.speak(utterance);
-            } else {
-                if(callback) setTimeout(callback, 2000);
-            }
+            } else { if(callback) setTimeout(callback, 2000); }
         }
 
         function updateProgressBadge() {
             let badge = document.getElementById('progress-badge');
             let btnLanjut = document.getElementById('btn-lanjut-tp');
             if(correctCountTP2 >= 10) {
-                badge.innerText = "⭐ POS SELESAI!";
-                badge.classList.remove('bg-yellow-400', 'text-slate-800');
-                badge.classList.add('bg-green-500', 'text-white', 'animate-pulse');
+                badge.innerText = "⭐ POS SELESAI!"; badge.classList.remove('bg-yellow-400', 'text-slate-800'); badge.classList.add('bg-green-500', 'text-white', 'animate-pulse');
                 btnLanjut.classList.remove('hidden');
             } else {
-                badge.innerText = `⭐ ${correctCountTP2}/10 Terkumpul`;
-                btnLanjut.classList.add('hidden');
+                badge.innerText = `⭐ ${correctCountTP2}/10 Terkumpul`; btnLanjut.classList.add('hidden');
             }
         }
 
         function generateCluster() {
-            let positions = []; 
-            let baseW = Math.floor(Math.random() * 2) + 2; let baseD = Math.floor(Math.random() * 2) + 2; 
+            let positions = []; let baseW = Math.floor(Math.random() * 2) + 2; let baseD = Math.floor(Math.random() * 2) + 2; 
             for(let x = 0; x < baseW; x++) { for(let z = 0; z < baseD; z++) { positions.push({x: x, y: 0, z: z}); } }
             let topCubes = Math.floor(Math.random() * 3) + 2; 
             for(let i = 0; i < topCubes; i++) {
@@ -125,7 +106,6 @@
             renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(container.clientWidth, container.clientHeight); container.appendChild(renderer.domElement);
             scene.add(new THREE.AmbientLight(0xffffff, 0.9)); 
             const light = new THREE.DirectionalLight(0xffffff, 0.6); light.position.set(10, 20, 15); scene.add(light);
-            const light2 = new THREE.DirectionalLight(0xffffff, 0.3); light2.position.set(-10, -5, -15); scene.add(light2);
             group = new THREE.Group(); scene.add(group); buildLevel(); animate();
             window.addEventListener('resize', () => { camera.aspect = container.clientWidth/container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); });
         }
@@ -148,7 +128,6 @@
             new THREE.Box3().setFromObject(group).getCenter(group.position).multiplyScalar(-1);
             generateOptions(correctCubesTotal); 
             
-            // REVISI BAHASA INSTRUKSI AWAL
             speak("Ayo jadi arsitek! Coba perhatikan baik-baik, lalu hitung ada berapa balok penyusunnya, termasuk yang bersembunyi di bawah ya.");
         }
 
@@ -164,54 +143,40 @@
             });
         }
 
-        // FUNGSI CEK JAWABAN DENGAN SUARA EMPATIK & KOREKSI
         function checkAnswer(isCorrect, btnElement) {
             if(sudahMenjawabBenar) return;
             sendEvaluasiData("TP 2: Arsitek Ruang", "Menghitung Susunan Balok", isCorrect ? "Benar" : "Salah", alatYangDigunakan);
-            
             let namaPanggilan = (localStorage.getItem('geoquest_student_name') || "").toLowerCase();
-
             document.getElementById('btn-xray').classList.remove('hidden'); document.getElementById('btn-explode').classList.remove('hidden');
 
             if (isCorrect) {
-                sudahMenjawabBenar = true;
-                correctCountTP2++;
-                localStorage.setItem('tp2_correct_count', correctCountTP2);
-                if(correctCountTP2 >= 10) localStorage.setItem('geoquest_tp2_done', 'true');
-                updateProgressBadge();
-
+                sudahMenjawabBenar = true; correctCountTP2++; localStorage.setItem('tp2_correct_count', correctCountTP2);
+                if(correctCountTP2 >= 10) localStorage.setItem('geoquest_tp2_done', 'true'); updateProgressBadge();
                 document.getElementById('options-container').style.pointerEvents = 'none'; 
-                btnElement.classList.remove('hover:bg-sky-50', 'hover:border-sky-400');
-                btnElement.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
+                btnElement.classList.remove('hover:bg-sky-50', 'hover:border-sky-400'); btnElement.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
                 if(!isExploded) toggleExplode(); 
 
-                let txt = correctCountTP2 >= 10 ? 
-                    `Luar biasa, ${namaPanggilan}! Benar, ada ${correctCubesTotal} kubus. Kamu telah mengumpulkan 10 Bintang! Silakan Lanjut ke TP 3.` :
-                    `Wah, hitunganmu sangat jeli, ${namaPanggilan}! Tepat sekali ada ${correctCubesTotal} balok. Hebat sekali!`;
-
+                let txt = correctCountTP2 >= 10 ? `Luar biasa! Benar, ada ${correctCubesTotal} kubus. Kamu telah mengumpulkan 10 Bintang!` : `Wah, hitunganmu sangat jeli, ${namaPanggilan}! Tepat sekali ada ${correctCubesTotal} balok.`;
                 speak(txt, () => { document.getElementById('next-btn').classList.remove('hidden'); });
             } else {
-                btnElement.disabled = true;
-                btnElement.classList.remove('hover:bg-sky-50', 'hover:border-sky-400');
+                btnElement.disabled = true; btnElement.classList.remove('hover:bg-sky-50', 'hover:border-sky-400');
                 btnElement.classList.add('opacity-50', 'bg-red-50', 'border-red-300', 'cursor-not-allowed');
                 
-                // LOGIKA SALAH: MEMBERI TAHU JAWABAN BENAR + MENGAJAK PAKAI ALAT BANTU
-                let txt = `Sedikit lagi tepat! Jawaban yang benar adalah ${correctCubesTotal} balok. Ingat, ada balok yang tertumpuk di bagian bawah lho. Yuk, klik angka ${correctCubesTotal} dan nyalakan Sinar X atau Bongkar susunannya untuk membuktikannya!`;
+                // LOGIKA SALAH: MEMBERITAHU JAWABAN BENAR SECARA EKSPLISIT
+                let txt = `Sedikit lagi tepat! Jawaban yang benar adalah ${correctCubesTotal} balok. Ingat, ada balok yang tertumpuk di bagian bawah lho. Yuk, klik angka ${correctCubesTotal} dan nyalakan Sinar X untuk membuktikannya!`;
                 speak(txt, null);
             }
         }
 
         function toggleXRay() {
             isXRayOn = !isXRayOn; let btn = document.getElementById('btn-xray');
-            if (isXRayOn) { btn.classList.add('bg-sky-500'); alatYangDigunakan = isExploded ? "Sinar-X & Bongkar" : "Sinar-X"; speak("Sinar-X diaktifkan!"); } 
-            else { btn.classList.remove('bg-sky-500'); }
+            if (isXRayOn) { btn.classList.add('bg-sky-500'); alatYangDigunakan = isExploded ? "Sinar-X & Bongkar" : "Sinar-X"; speak("Sinar-X diaktifkan!"); } else { btn.classList.remove('bg-sky-500'); }
             cubesData.forEach(data => { gsap.to(data.mesh.material, { opacity: isXRayOn ? 0.35 : 1, duration: 0.5 }); });
         }
 
         function toggleExplode() {
             isExploded = !isExploded; let btn = document.getElementById('btn-explode');
-            if (isExploded) { btn.classList.add('bg-sky-500'); alatYangDigunakan = isXRayOn ? "Sinar-X & Bongkar" : "Bongkar"; speak("Membongkar susunan!"); } 
-            else { btn.classList.remove('bg-sky-500'); if(!sudahMenjawabBenar) speak("Menyusun kembali."); }
+            if (isExploded) { btn.classList.add('bg-sky-500'); alatYangDigunakan = isXRayOn ? "Sinar-X & Bongkar" : "Bongkar"; speak("Membongkar susunan!"); } else { btn.classList.remove('bg-sky-500'); if(!sudahMenjawabBenar) speak("Menyusun kembali."); }
             cubesData.forEach(data => {
                 let tX = isExploded ? data.origX * 1.8 : data.origX; let tY = isExploded ? data.origY * 1.8 : data.origY; let tZ = isExploded ? data.origZ * 1.8 : data.origZ;
                 gsap.to(data.mesh.position, { x: tX, y: tY, z: tZ, duration: 1.2, ease: "back.out(1.2)" });
@@ -221,19 +186,6 @@
         function nextLevel() { buildLevel(); document.getElementById('options-container').style.pointerEvents = 'auto'; }
         function animate() { requestAnimationFrame(animate); group.rotation.y += 0.003; renderer.render(scene, camera); }
         init();
-    </script>
-<script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                .then(registration => {
-                    console.log('ServiceWorker sukses didaftarkan dengan scope: ', registration.scope);
-                })
-                .catch(err => {
-                    console.log('ServiceWorker gagal didaftarkan: ', err);
-                });
-            });
-        }
     </script>
 </body>
 </html>
