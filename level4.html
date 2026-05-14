@@ -6,7 +6,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoQuest 3D - TP 4: Pilot Akrobatik</title>
+    <title>GeoQuest 3D - Pos 4: Pilot Akrobatik</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -24,7 +24,7 @@
             <a href="index.html" class="bg-white/90 hover:bg-white text-slate-800 px-4 py-2 rounded-full text-xs font-bold shadow-lg transition flex items-center justify-center gap-2 border border-slate-200 w-max">⬅️ Kembali ke Gerbang Utama</a>
             
             <a href="sertifikat.html" id="btn-lanjut-tp" class="bg-yellow-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg border border-yellow-600 hover:bg-yellow-600 transition animate-bounce hidden w-max text-slate-900">🏆 KLAIM SERTIFIKAT PENJELAJAH</a>
-            <span id="view-label" class="bg-purple-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider w-max">TP 4: Mental Rotation</span>
+            <span id="view-label" class="bg-purple-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider w-max">Pos 4: Memutar Bangun Ruang</span>
         </div>
 
         <div class="absolute top-4 right-4 z-10">
@@ -77,18 +77,16 @@
         let sudahMenjawabBenar = false;
         let isRolling = false;
 
-        // Progres Bintang Kelulusan
         let correctCountTP4 = parseInt(localStorage.getItem('tp4_correct_count')) || 0;
 
-        // FUNGSI SPEAK DIPERBARUI DENGAN SUARA CERIA
         function speak(text, callback = null) {
             document.getElementById('chat-bubble').innerText = `"${text}"`;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
                 let utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'id-ID'; 
-                utterance.pitch = 1.5; // Ceria
-                utterance.rate = 1.05; // Sedikit Cepat
+                utterance.pitch = 1.5; 
+                utterance.rate = 1.05; 
                 let voices = window.speechSynthesis.getVoices();
                 let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
                 if(femaleVoice) utterance.voice = femaleVoice;
@@ -145,7 +143,6 @@
             
             let mats = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat];
             
-            // Pastikan sisi emas selalu terlihat di awal (Kanan, Atas, atau Depan)
             const visibleIndices = [0, 2, 4]; 
             cFaceIdx = visibleIndices[Math.floor(Math.random() * visibleIndices.length)];
             mats[cFaceIdx] = goldMat; 
@@ -156,7 +153,6 @@
             singleCubeMesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color:0x334155, linewidth: 2 }))); 
             group.add(singleCubeMesh);
             
-            // Generate rute rotasi acak (2 hingga 3 kali putaran)
             tRots = []; 
             let nR = Math.floor(Math.random() * 2) + 2; 
             let e = new THREE.Euler(0,0,0);
@@ -170,10 +166,8 @@
                 if(axis===2) { tRots.push({x:0, y:0, z:a}); e.z+=a; } 
             }
             
-            // Hitung di mana sisi emas akan berakhir
             fDir = getDirName(cNormal.clone().applyEuler(e).round()); 
             
-            // REVISI BAHASA INSTRUKSI AWAL
             speak(`Pilot, perhatikan baik-baik Sisi Emas yang sedang menghadap ke arah ${getDirName(cNormal)}.`);
         }
 
@@ -215,7 +209,6 @@
             document.getElementById('btn-start-roll').classList.add('hidden');
             
             speak("Ayo bayangkan bentuk ini berguling secara perlahan. Awas emasnya hilang!", () => {
-                // Sembunyikan sisi emas (semua abu-abu)
                 singleCubeMesh.material = [baseMat, baseMat, baseMat, baseMat, baseMat, baseMat];
                 
                 let tl = gsap.timeline({ onComplete: () => { 
@@ -229,12 +222,11 @@
             });
         }
 
-        // FUNGSI CEK JAWABAN DENGAN SUARA EMPATIK & KOREKSI
         function checkAnswer(guessDir, btnElement) {
             if(sudahMenjawabBenar || isRolling) return;
 
             let isBenar = guessDir === fDir;
-            sendEvaluasiData("TP 4: Pilot Akrobatik", "Rotasi Mental", isBenar ? "Benar" : "Salah", alatYangDigunakan);
+            sendEvaluasiData("TP 4: Pilot Akrobatik", "Memutar Bangun Ruang", isBenar ? "Benar" : "Salah", alatYangDigunakan);
             
             let namaPanggilan = (localStorage.getItem('geoquest_student_name') || "").toLowerCase();
 
@@ -268,7 +260,7 @@
                 btnElement.classList.remove('border-slate-200', 'hover:border-purple-400', 'hover:bg-purple-50');
                 btnElement.classList.add('opacity-40', 'bg-red-50', 'border-red-300', 'cursor-not-allowed', 'text-slate-400');
                 
-                // LOGIKA SALAH EMPATIK + MEMBERI TAHU JAWABAN BENAR
+                // LOGIKA SALAH EKSPLISIT: SEBUTKAN ARAH YANG BENAR
                 let txt = `Hampir mendarat dengan pas! Jawaban yang benar adalah posisi ${fDir}. Jika digulingkan ke arah tersebut, posisi sisinya akan berpindah. Ayo klik posisi ${fDir} dan gunakan tombol putar lambat untuk melihat pergerakannya!`;
                 speak(txt, null);
             }
@@ -300,19 +292,6 @@
 
         function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
         init();
-    </script>
-<script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                .then(registration => {
-                    console.log('ServiceWorker sukses didaftarkan dengan scope: ', registration.scope);
-                })
-                .catch(err => {
-                    console.log('ServiceWorker gagal didaftarkan: ', err);
-                });
-            });
-        }
     </script>
 </body>
 </html>
