@@ -49,11 +49,13 @@
                     <div class="flex flex-col sm:flex-row gap-3">
                         <input type="text" id="student-name-input" placeholder="Siapa namamu?" class="flex-1 px-5 py-3 rounded-xl border-2 border-slate-300 focus:border-amber-500 focus:outline-none font-bold text-slate-700">
                         <button onclick="saveName()" class="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-xl font-bold transition shadow-lg transform hover:-translate-y-1">Mulai Petualangan!</button>
+                    </div>
                     <div class="mt-6">
-    <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105 flex items-center gap-2 mx-auto border-2 border-blue-400">
-        📖 Kenali GeoQuest & Materi Dasar
-    </button>
-</div>
+                        <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105 flex items-center gap-2 mx-auto border-2 border-blue-400">
+                            📖 Kenali GeoQuest & Materi Dasar
+                        </button>
+                    </div>
+                </div>
                 
                 <p id="chat-bubble" class="text-slate-700 mt-3 leading-relaxed italic text-md md:text-lg font-medium hidden bg-white/70 p-4 rounded-xl border-l-4 border-amber-500">
                     "Halo, <span id="display-name" class="font-bold text-amber-600 uppercase"></span>! Koleksilah semua Bintang dari ke-4 pos petualangan ini ya!"
@@ -70,7 +72,8 @@
                         <div id="star-tp1" class="absolute -top-4 -right-4 text-4xl star-badge hidden">⭐</div>
                         <div class="text-4xl mb-3">📦</div>
                         <h3 class="font-extrabold text-xl text-slate-800">Pos 1: Sang Pelipat Ajaib</h3>
-                        <p class="text-xs text-amber-600 font-bold uppercase tracking-wider mb-2 italic">Misi: Mental Folding</p>
+                        <p class="text-xs text-amber-600 font-bold uppercase tracking-wider mb-1 italic">Misi: Mental Folding</p>
+                        <p class="text-sm text-slate-600 font-medium leading-tight mt-2 bg-amber-50 p-2 rounded-lg">👉 Tebak sisi mana yang akan menjadi penutup jika jaring-jaring ini dilipat!</p>
                     </a>
                 </div>
                 <div class="order-1 md:order-2 absolute left-8 md:left-1/2 transform -translate-x-1/2 flex items-center justify-center">
@@ -89,7 +92,8 @@
                         <div id="star-tp2" class="absolute -top-4 -right-4 text-4xl star-badge hidden">⭐</div>
                         <div class="text-4xl mb-3">🧱</div>
                         <h3 class="font-extrabold text-xl text-slate-800">Pos 2: Arsitek Ruang</h3>
-                        <p class="text-xs text-sky-600 font-bold uppercase tracking-wider mb-2 italic">Misi: Spatial Structuring</p>
+                        <p class="text-xs text-sky-600 font-bold uppercase tracking-wider mb-1 italic">Misi: Spatial Structuring</p>
+                        <p class="text-sm text-slate-600 font-medium leading-tight mt-2 bg-sky-50 p-2 rounded-lg">👉 Ayo berhitung! Berapa total semua balok penyusun ini, termasuk yang bersembunyi?</p>
                     </a>
                 </div>
             </div>
@@ -100,7 +104,8 @@
                         <div id="star-tp3" class="absolute -top-4 -right-4 text-4xl star-badge hidden">⭐</div>
                         <div class="text-4xl mb-3">📷</div>
                         <h3 class="font-extrabold text-xl text-slate-800">Pos 3: Sang Fotografer</h3>
-                        <p class="text-xs text-teal-600 font-bold uppercase tracking-wider mb-2 italic">Misi: Orthogonal Projection</p>
+                        <p class="text-xs text-teal-600 font-bold uppercase tracking-wider mb-1 italic">Misi: Orthogonal Projection</p>
+                        <p class="text-sm text-slate-600 font-medium leading-tight mt-2 bg-teal-50 p-2 rounded-lg">👉 Bayangkan kamu menerbangkan drone. Gambar pola mana yang tepat dari arah atas langit?</p>
                     </a>
                 </div>
                 <div class="order-1 md:order-2 absolute left-8 md:left-1/2 transform -translate-x-1/2 flex items-center justify-center">
@@ -119,7 +124,8 @@
                         <div id="star-tp4" class="absolute -top-4 -right-4 text-4xl star-badge hidden">⭐</div>
                         <div class="text-4xl mb-3">🔄</div>
                         <h3 class="font-extrabold text-xl text-slate-800">Pos 4: Pilot Akrobatik</h3>
-                        <p class="text-xs text-purple-600 font-bold uppercase tracking-wider mb-2 italic">Misi: Mental Rotation</p>
+                        <p class="text-xs text-purple-600 font-bold uppercase tracking-wider mb-1 italic">Misi: Mental Rotation</p>
+                        <p class="text-sm text-slate-600 font-medium leading-tight mt-2 bg-purple-50 p-2 rounded-lg">👉 Perhatikan Sisi Emasnya. Kalau bangun ini digulingkan, ke mana Sisi Emas itu pergi?</p>
                     </a>
                 </div>
             </div>
@@ -133,8 +139,66 @@
         </div>
     </div>
 
+    <div id="materiModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[999] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border-4 border-amber-500 relative">
+            
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition text-2xl font-bold">
+                &times;
+            </button>
+
+            <div class="p-8">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-black text-amber-600 mb-2">Tentang GeoQuest 3D</h2>
+                    <div class="h-1 w-24 bg-amber-400 mx-auto rounded-full mb-4"></div>
+                    <p class="text-slate-700 leading-relaxed italic">
+                        "Halo, Penjelajah Hebat di <strong>SDN Langensari!</strong> GeoQuest 3D adalah petualangan ruang virtual untuk membantumu jago Matematika tanpa rasa takut. Di sini, kamu bebas bereksperimen, membuat kesalahan, dan belajar membayangkan bangun ruang dengan cara yang sangat seru!"
+                    </p>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-amber-50 p-6 rounded-2xl border-l-8 border-amber-500">
+                        <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            🏺 Jejak Sejarah Bangun Ruang
+                        </h3>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            Tahukah kamu? Ribuan tahun lalu, Bangsa Mesir Kuno sudah menggunakan konsep bangun ruang untuk membangun Piramida yang megah. Mereka menyusun balok-balok batu raksasa dengan sangat presisi. Jadi, saat kamu belajar GeoQuest, kamu sebenarnya sedang mempelajari rahasia para pembangun hebat dunia!
+                        </p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-5 rounded-2xl border-b-4 border-blue-400">
+                            <h4 class="font-bold text-blue-700 mb-2">🧊 Apa itu Kubus?</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Kubus adalah bangun ruang yang istimewa karena memiliki <strong>6 sisi berbentuk persegi</strong> yang ukurannya persis sama. Semua rusuknya sama panjang, seperti dadu atau kotak kado yang rapi.
+                            </p>
+                        </div>
+                        <div class="bg-green-50 p-5 rounded-2xl border-b-4 border-green-400">
+                            <h4 class="font-bold text-green-700 mb-2">📦 Apa itu Balok?</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Balok mirip dengan kubus, tapi sisi-sisinya tidak harus sama besar. Sisi-sisi yang <strong>berhadapan</strong> memiliki ukuran yang sama. Contohnya seperti kotak sepatu atau lemari di kelasmu.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-100 p-4 rounded-xl text-center">
+                        <p class="text-sm font-semibold text-slate-600">
+                            🎯 Materi Petualangan: Pelipatan (Folding), Komposisi Balok, Proyeksi Atas, dan Rotasi Mental.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button onclick="closeModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-10 rounded-xl shadow-md transition">
+                        Saya Mengerti, Ayo Mulai!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let isSpeaking = false; let studentName = "";
+        
         function checkLogin() {
             studentName = localStorage.getItem('geoquest_student_name');
             if(studentName) {
@@ -169,20 +233,23 @@
                 document.getElementById('tp-grid').classList.add('opacity-50', 'pointer-events-none');
             }
         }
+
         function saveName() {
             let inputName = document.getElementById('student-name-input').value.trim();
             if(inputName === "") { alert("Penjelajah butuh nama! Isi dulu ya!"); return; }
             localStorage.setItem('geoquest_student_name', inputName); checkLogin();
         }
+
         function logout() {
             if(confirm("Apakah kamu ingin menghapus semua kemajuan bintang dan berganti nama?")) {
                 localStorage.clear(); checkLogin(); location.reload();
             }
         }
+
         function playWelcomeAudio() {
             if(isSpeaking || !studentName) return; window.speechSynthesis.cancel();
             
-            // TRIK ANTI-EJA: Ubah jadi huruf kecil khusus untuk dibaca suara
+            // TRIK ANTI-EJA
             let namaPanggilan = studentName.toLowerCase(); 
 
             let text = `Halo, ${namaPanggilan}! Ibu siap mendampingimu. Mari koleksi Bintang Kelulusan di setiap pos ya!`;
@@ -194,8 +261,8 @@
 
             let utterance = new SpeechSynthesisUtterance(text); 
             utterance.lang = 'id-ID'; 
-            utterance.pitch = 1.5; // NADA LEBIH TINGGI AGAR SANGAT CERIA!
-            utterance.rate = 1.05; // Sedikit lebih cepat agar terdengar semangat
+            utterance.pitch = 1.5; 
+            utterance.rate = 1.05; 
             
             let voices = window.speechSynthesis.getVoices();
             let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
@@ -204,9 +271,40 @@
             utterance.onstart = () => { isSpeaking = true; }; utterance.onend = () => { isSpeaking = false; };
             window.speechSynthesis.speak(utterance);
         }
+
+        // --- FUNGSI MODAL MATERI ---
+        function openModal() {
+            document.getElementById('materiModal').classList.remove('hidden');
+            if ('speechSynthesis' in window) {
+                let intro = new SpeechSynthesisUtterance("Mari mengenal lebih dekat tentang GeoQuest dan konsep bangun ruang.");
+                intro.lang = 'id-ID';
+                intro.pitch = 1.5;
+                intro.rate = 1.05;
+                
+                let voices = window.speechSynthesis.getVoices();
+                let femaleVoice = voices.find(v => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
+                if(femaleVoice) intro.voice = femaleVoice;
+                
+                window.speechSynthesis.speak(intro);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('materiModal').classList.add('hidden');
+            window.speechSynthesis.cancel(); 
+        }
+
+        window.onclick = function(event) {
+            let modal = document.getElementById('materiModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
         window.addEventListener('load', checkLogin);
     </script>
-<script>
+
+    <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
@@ -219,61 +317,5 @@
             });
         }
     </script>
-            <div id="materiModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[999] hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border-4 border-amber-500 relative">
-        
-        <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition text-2xl font-bold">
-            &times;
-        </button>
-
-        <div class="p-8">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-black text-amber-600 mb-2">Tentang GeoQuest 3D</h2>
-                <div class="h-1 w-24 bg-amber-400 mx-auto rounded-full mb-4"></div>
-                <p class="text-slate-700 leading-relaxed italic">
-                    "Halo, Penjelajah Hebat di <strong>SDN Sukarindik Kota Tasikmalaya!</strong> GeoQuest 3D adalah petualangan ruang virtual untuk membantumu jago Matematika tanpa rasa takut. Di sini, kamu bebas bereksperimen, membuat kesalahan, dan belajar membayangkan bangun ruang dengan cara yang sangat seru!"
-                </p>
-            </div>
-
-            <div class="space-y-6">
-                <div class="bg-amber-50 p-6 rounded-2xl border-l-8 border-amber-500">
-                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-                        🏺 Jejak Sejarah Bangun Ruang
-                    </h3>
-                    <p class="text-slate-600 text-sm leading-relaxed">
-                        Tahukah kamu? Ribuan tahun lalu, Bangsa Mesir Kuno sudah menggunakan konsep bangun ruang untuk membangun Piramida yang megah. Mereka menyusun balok-balok batu raksasa dengan sangat presisi. Jadi, saat kamu belajar GeoQuest, kamu sebenarnya sedang mempelajari rahasia para pembangun hebat dunia!
-                    </p>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div class="bg-blue-50 p-5 rounded-2xl border-b-4 border-blue-400">
-                        <h4 class="font-bold text-blue-700 mb-2">🧊 Apa itu Kubus?</h4>
-                        <p class="text-xs text-slate-600 leading-relaxed">
-                            Kubus adalah bangun ruang yang istimewa karena memiliki <strong>6 sisi berbentuk persegi</strong> yang ukurannya persis sama. Semua rusuknya sama panjang, seperti dadu atau kotak kado yang rapi.
-                        </p>
-                    </div>
-                    <div class="bg-green-50 p-5 rounded-2xl border-b-4 border-green-400">
-                        <h4 class="font-bold text-green-700 mb-2">📦 Apa itu Balok?</h4>
-                        <p class="text-xs text-slate-600 leading-relaxed">
-                            Balok mirip dengan kubus, tapi sisi-sisinya tidak harus sama besar. Sisi-sisi yang <strong>berhadapan</strong> memiliki ukuran yang sama. Contohnya seperti kotak sepatu atau lemari di kelasmu.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="bg-slate-100 p-4 rounded-xl text-center">
-                    <p class="text-sm font-semibold text-slate-600">
-                        🎯 Materi Petualangan: Pelipatan (Folding), Komposisi Balok, Proyeksi Atas, dan Rotasi Mental.
-                    </p>
-                </div>
-            </div>
-
-            <div class="mt-8 text-center">
-                <button onclick="closeModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-10 rounded-xl shadow-md transition">
-                    Saya Mengerti, Ayo Mulai!
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 </body>
 </html>
